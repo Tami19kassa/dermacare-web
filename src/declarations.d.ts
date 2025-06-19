@@ -1,0 +1,1 @@
+declare module './l10n/i18n.js';
