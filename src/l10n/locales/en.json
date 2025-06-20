@@ -116,6 +116,23 @@
   "name_updated": "Name updated successfully!",
   "name_update_failed": "Failed to update name.",
     "back_to_home": "Back to Home",
-      "new_chat": "New Chat"
-       
+      "new_chat": "New Chat",
+       "commonDiseases": "Browse Common Skin Diseases",
+  "acne": "Acne",
+  "eczema": "Eczema",
+  "psoriasis": "Psoriasis",
+  "rosacea": "Rosacea",
+  "hives": "Hives",
+  "athletesFoot": "Athlete's Foot",
+  "coldSores": "Cold Sores",
+  "warts": "Warts",
+  "ringworm": "Ringworm",
+  "melasma": "Melasma",
+  "vitiligo": "Vitiligo",
+  "impetigo": "Impetigo",
+  "shingles": "Shingles",
+  "seborrheicDermatitis": "Seborrheic Dermatitis",
+  "contactDermatitis": "Contact Dermatitis"  ,
+  "common_skin_diseases": "Common Skin Diseases"
+
 }

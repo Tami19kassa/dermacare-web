@@ -116,6 +116,23 @@
   "name_updated": "ስም በተሳካ ሁኔታ ተለውጧል!",
   "name_update_failed": "ስምን መቀየር አልተቻለም።",
     "back_to_home": "ወደ ዋናው ገጽ ይመለሱ",
-      "new_chat": "አዲስ ውይይት"
+      "new_chat": "አዲስ ውይይት",
+      "commonDiseases": "ጋራ የቆዳ በሽታዎችን ይመልከቱ",
+  "acne": "አክኔ",
+  "eczema": "ኤክዜማ",
+  "psoriasis": "ሶሪያሲስ",
+  "rosacea": "ሮዛሲያ",
+  "hives": "ሄቭስ",
+  "athletesFoot": "የእግር ባክተሪያ",
+  "coldSores": "ቀዝቃዛ ቁስለቶች",
+  "warts": "ሹልሹልቶች",
+  "ringworm": "ክብ ቅማል",
+  "melasma": "ሜላስማ",
+  "vitiligo": "ቪቲሊጎ",
+  "impetigo": "ኢምፔቲጎ",
+  "shingles": "ሽንግልስ",
+  "seborrheicDermatitis": "ሴቦሪክ ዴርማታይቲስ",
+  "contactDermatitis": "ኮንታክት ዴርማታይቲስ",
+    "common_skin_diseases": "የተለመዱ የቆዳ በሽታዎች"
        
 }
