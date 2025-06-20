@@ -1,6 +1,5 @@
-import React from 'react';
-import Profile from '../../features/profile/Profile';
-import Quiz from '../../features/profile/Quiz';
+import Profile from "../../features/profile/Profile";
+import Quiz from "../../features/profile/Quiz";
 
 const RightSidebar: React.FC = () => {
   return (
