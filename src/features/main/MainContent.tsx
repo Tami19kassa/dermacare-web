@@ -202,7 +202,9 @@ const MainContent: React.FC = () => {
                     triggerFileSelect={triggerFileSelect}
                     fileInputRef={fileInputRef}
                     handleImageChange={handleImageChange}
+
                 />
+                <div className="lg:mb-10 md:mb-10"></div>
             </div>
 
             <PredictionModal 
