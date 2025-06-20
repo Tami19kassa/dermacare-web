@@ -204,7 +204,7 @@ const MainContent: React.FC = () => {
                     handleImageChange={handleImageChange}
 
                 />
-                <div className="lg:mb-10 md:mb-10"></div>
+                <div className="lg:mb-20"></div>
             </div>
 
             <PredictionModal 
