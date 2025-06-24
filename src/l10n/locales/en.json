@@ -133,6 +133,8 @@
   "shingles": "Shingles",
   "seborrheicDermatitis": "Seborrheic Dermatitis",
   "contactDermatitis": "Contact Dermatitis"  ,
-  "common_skin_diseases": "Common Skin Diseases"
+  "common_skin_diseases": "Common Skin Diseases",
+
+  "discard": "Discard", "save_to_history": "Save to History", "saving": "Saving...", "upload_image": "Upload Image"
 
 }

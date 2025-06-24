@@ -133,6 +133,8 @@
   "shingles": "ሽንግልስ",
   "seborrheicDermatitis": "ሴቦሪክ ዴርማታይቲስ",
   "contactDermatitis": "ኮንታክት ዴርማታይቲስ",
-    "common_skin_diseases": "የተለመዱ የቆዳ በሽታዎች"
+    "common_skin_diseases": "የተለመዱ የቆዳ በሽታዎች",
+
+    "discard": "አስወግድ", "save_to_history": "በታሪክ ውስጥ አስቀምጥ", "saving": "በማስቀመጥ ላይ...", "upload_image": "ምስል ስቀል"
        
 }
