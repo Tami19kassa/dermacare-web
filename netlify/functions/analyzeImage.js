@@ -1,80 +1,81 @@
 const tf = require('@tensorflow/tfjs-node');
 const sharp = require('sharp');
-// Note: We are not using firebase-admin here to keep dependencies minimal.
+const fs = require('fs');
+const path = require('path');
+const https = require('https');
 
-// We can't load the model from a local file, so we will put the URL in an environment variable
 const MODEL_URL = process.env.VITE_TFLITE_MODEL_URL;
+const LABELS_URL = process.env.VITE_TFLITE_LABELS_URL;
+let model;
+let labels;
 
-let model; // Global model cache
-
-async function loadModel() {
-    if (!model) {
-        console.log("Loading model from URL:", MODEL_URL);
-        model = await tf.loadGraphModel(MODEL_URL);
-        console.log("Model loaded successfully.");
-    }
-    return model;
+async function downloadFile(url, filepath) {
+    return new Promise((resolve, reject) => {
+        https.get(url, (res) => {
+            const stream = fs.createWriteStream(filepath);
+            res.pipe(stream);
+            stream.on('finish', () => {
+                stream.close();
+                console.log(`Downloaded ${filepath}`);
+                resolve();
+            });
+        }).on('error', (err) => {
+            reject(err);
+        });
+    });
 }
 
-exports.handler = async (event, context) => {
-    // Only allow POST requests
+async function loadModel() {
+    if (model) return;
+    try {
+        // Functions run in a temporary directory
+        const modelPath = '/tmp/skin_model.tflite';
+        const labelsPath = '/tmp/skin_labels.txt';
+
+        await Promise.all([
+            downloadFile(MODEL_URL, modelPath),
+            downloadFile(LABELS_URL, labelsPath)
+        ]);
+
+        model = await tf.loadGraphModel(`file://${modelPath}`);
+        labels = fs.readFileSync(labelsPath, "utf-8").split("\n").map(l => l.trim());
+        console.log("Model loaded successfully in Netlify Function.");
+    } catch (e) {
+        console.error("Failed to load model in Netlify Function:", e);
+    }
+}
+
+exports.handler = async (event) => {
     if (event.httpMethod !== 'POST') {
         return { statusCode: 405, body: 'Method Not Allowed' };
     }
-
+    await loadModel();
+    if (!model) {
+        return { statusCode: 500, body: JSON.stringify({ error: "Model not loaded" }) };
+    }
+    
     try {
-        await loadModel();
-
-        // The image is sent as a base64 string in the request body
         const { image: base64Image } = JSON.parse(event.body);
-
-        if (!base64Image) {
-            return { statusCode: 400, body: JSON.stringify({ error: 'No image data provided.' }) };
-        }
-        
-        // Convert base64 to a buffer
         const buffer = Buffer.from(base64Image.split(',')[1], 'base64');
         
-        // Pre-process the image
-        const resizedBuffer = await sharp(buffer)
-            .resize(128, 128)
-            .toFormat('jpeg')
-            .toBuffer();
-
-        const tensor = tf.tidy(() => {
-            return tf.node.decodeImage(resizedBuffer, 3).toFloat().div(255.0).expandDims();
-        });
-
-        // Make a prediction
+        const resized = await sharp(buffer).resize(128, 128).toFormat('jpeg').toBuffer();
+        const tensor = tf.tidy(() => tf.node.decodeImage(resized, 3).toFloat().div(255).expandDims());
+        
         const prediction = model.predict(tensor);
         const probabilities = await prediction.data();
-
         tensor.dispose();
         prediction.dispose();
         
-        // This is just a placeholder for your labels. You must ensure the order is correct.
-        const labels = ["Acne", "Eczema", "Psoriasis", /* ... and so on ... */]; 
-        
-        const results = Array.from(probabilities).map((prob, i) => ({
-            label: labels[i],
-            confidence: prob,
-        }));
+        const results = Array.from(probabilities).map((p, i) => ({ label: labels[i], confidence: p }));
         results.sort((a, b) => b.confidence - a.confidence);
-
+        
         return {
             statusCode: 200,
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                condition: results[0].label,
-                confidence: results[0].confidence
-            })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ condition: results[0].label, confidence: results[0].confidence })
         };
-
-    } catch (error) {
-        console.error('Error during analysis:', error);
-        return {
-            statusCode: 500,
-            body: JSON.stringify({ error: 'Failed to analyze image.' }),
-        };
+    } catch (e) {
+        console.error("Prediction error:", e);
+        return { statusCode: 500, body: JSON.stringify({ error: e.message }) };
     }
 };

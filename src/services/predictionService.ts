@@ -4,22 +4,21 @@ import { addScanResult } from './firestoreService';
 import toast from 'react-hot-toast';
 import axios from 'axios';
 
-// --- Type Definitions for clarity and type safety ---
-interface HfPrediction {
-    label: string;
-    conf: number;
-}
+// Define the shape of the data we will work with for type safety
 export interface Prediction {
     condition: string;
     confidence: number;
 }
 
-// --- API Configuration ---
-// This is the public API endpoint for your Hugging Face Space.
-const HUGGING_FACE_API_URL = "https://tamikassa84-dermacare-skin-analyzer.hf.space/run/predict";
+ 
+const FUNCTION_URL = "/.netlify/functions/analyzeImage";
 
-
-// Helper function to convert a File object into a base64 string
+/**
+ * A helper function to convert a File object into a base64 string,
+ * which can be sent in a JSON payload to our serverless function.
+ * @param file The image file selected by the user.
+ * @returns A promise that resolves to a base64 encoded string.
+ */
 const toBase64 = (file: File): Promise<string> => new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
@@ -29,7 +28,7 @@ const toBase64 = (file: File): Promise<string> => new Promise((resolve, reject) 
 
 
 /**
- * Performs the end-to-end skin analysis by calling the public Hugging Face API.
+ * Performs the end-to-end skin analysis by calling the Netlify function.
  * @param imageFile The image file uploaded by the user.
  * @returns A promise that resolves to a Prediction object, or null if an error occurs.
  */
@@ -43,57 +42,48 @@ export const performScan = async (imageFile: File): Promise<Prediction | null> =
     const toastId = toast.loading('Analyzing image...');
 
     try {
-        // 1. Convert the image to a base64 string for the API payload.
+        // 1. Convert the image to a base64 string to send in the request.
         const base64Image = await toBase64(imageFile);
 
-        // 2. Call the public Hugging Face API Endpoint.
-        // No Authorization header is needed since the Space is public.
+        // 2. Call the Netlify serverless function via a POST request.
         const response = await axios.post(
-            HUGGING_FACE_API_URL,
-            {
-                // The Gradio API expects data in this specific format: { "data": [...] }
-                data: [base64Image],
-            },
-            {
-                // A long timeout is still a good idea in case the Space is "waking up".
-                timeout: 90000 
-            }
+            FUNCTION_URL,
+            // The body of the request is a JSON object with the image data
+            { image: base64Image },
+            // Set a generous timeout to allow for function "cold starts"
+            { timeout: 90000 } 
         );
+        
+        // 3. The function returns the prediction result in the response body.
+        const result = response.data as Prediction;
 
-        // 3. Process the response from the API.
-        const predictions = response.data.data[0].confidences as HfPrediction[];
-        if (!predictions || predictions.length === 0) {
-            throw new Error("Analysis did not return any predictions.");
+        if (!result || !result.condition) {
+            throw new Error("Analysis failed to return a valid result.");
         }
 
-        // 4. Extract the top prediction from the results.
-        const topPrediction = predictions[0];
-        const result: Prediction = {
-            condition: topPrediction.label,
-            confidence: topPrediction.conf,
-        };
-        
         toast.loading('Saving result to your history...', { id: toastId });
 
-        // 5. In parallel, upload the original image to Firebase Storage.
+        // 4. In parallel, upload the original image to Firebase Storage for record-keeping.
         const filePath = `scans/${user.uid}/${Date.now()}_${imageFile.name}`;
         const storageRef = ref(storage, filePath);
         const snapshot = await uploadBytes(storageRef, imageFile);
         const imageUrl = await getDownloadURL(snapshot.ref);
 
-        // 6. Save the final result (including the storage URL) to your Firestore database.
+        // 5. Save the prediction data and the new image URL to Firestore.
         await addScanResult(user.uid, {
-            imageUrl: imageUrl,
+            imageUrl,
             condition: result.condition,
-            confidence: result.confidence * 100,
+            confidence: result.confidence * 100, // Convert from 0.92 to 92.0
         });
-
-        toast.success(`Result: ${result.condition}`, { id: toastId });
+        
+        // 6. Show the final success message.
+        toast.success(`Result: ${result.condition}`);
         return result;
 
     } catch (error: any) {
-        console.error("Full scan error object:", error);
-        const errorMessage = error.response?.data?.error || "An error occurred during the scan. The model may be starting up.";
+        console.error("Scan failed:", error);
+        // Display a helpful error message to the user.
+        const errorMessage = error.response?.data?.error || "An error occurred during the scan.";
         toast.error(errorMessage, { id: toastId });
         return null;
     }
