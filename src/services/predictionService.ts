@@ -10,7 +10,7 @@ export interface Prediction { condition: string; confidence: number; }
 // THE DEFAULT, CORRECT API URL
 const HUGGING_FACE_API_URL = "https://tamikassa84-dermacare-skin-analyzer.hf.space/run/predict";
 const HF_TOKEN = import.meta.env.VITE_HUGGING_FACE_TOKEN;
-
+ 
 const toBase64 = (file: File): Promise<string> => new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
