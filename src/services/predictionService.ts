@@ -21,7 +21,7 @@ interface ApiResponsePrediction {
 // --- API Configuration ---
 // We are now pointing to our own local Python/Flask server.
 // No API key is needed!
-const LOCAL_API_URL = "http://localhost:5000/predict";
+const LIVE_API_URL = "https://dermacare-web-api.onrender.com/predict";
                          
 
 // --- Helper Functions ---
@@ -61,7 +61,7 @@ export const performScan = async (imageFile: File): Promise<Prediction | null> =
         // 2. Call your LOCAL Flask API.
         const response = await axios({
             method: "POST",
-            url: LOCAL_API_URL,
+            url:  LIVE_API_URL,
             data: formData, // Send the file as form data
             headers: {
                 // This header is crucial for file uploads
