@@ -1,3 +1,5 @@
+// src/services/firestoreService.ts
+
 import { db } from '../firebase';
 import {
   doc,
@@ -12,11 +14,12 @@ import {
   getDocs,
   serverTimestamp,
   addDoc,
+  deleteDoc, // Make sure this is imported
   increment,
   arrayUnion,
 } from 'firebase/firestore';
 
-// Define a type for Scan History items for type safety
+// Define and EXPORT a type for Scan History items for type safety
 export interface ScanHistoryItem {
   id: string;
   imageUrl: string;
@@ -26,22 +29,12 @@ export interface ScanHistoryItem {
 }
 
 // --- PROFILE FUNCTIONS ---
-
-/**
- * Creates or updates a user's document in the 'users' collection.
- * @param uid - The user's unique ID from Firebase Auth.
- * @param data - An object containing the profile data to set or merge.
- */
+// ... (your existing updateUserProfile and getUserProfile functions - no changes needed) ...
 export const updateUserProfile = async (uid: string, data: object) => {
   const userRef = doc(db, 'users', uid);
   await setDoc(userRef, { ...data, lastUpdated: serverTimestamp() }, { merge: true });
 };
 
-/**
- * Fetches a user's profile document from Firestore.
- * @param uid - The user's unique ID.
- * @returns The user's data object, or null if not found.
- */
 export const getUserProfile = async (uid: string) => {
   const userRef = doc(db, 'users', uid);
   const docSnap = await getDoc(userRef);
@@ -50,13 +43,6 @@ export const getUserProfile = async (uid: string) => {
 
 
 // --- SCAN HISTORY FUNCTIONS ---
-
-/**
- * Fetches the most recent scan history for a given user.
- * @param uid - The user's unique ID.
- * @param count - The number of history items to fetch.
- * @returns A promise that resolves to an array of ScanHistoryItem objects.
- */
 export const getScanHistory = async (uid: string, count: number = 10): Promise<ScanHistoryItem[]> => {
   const historyCollection = collection(db, 'scanHistory');
   const q = query(
@@ -65,7 +51,6 @@ export const getScanHistory = async (uid: string, count: number = 10): Promise<S
     orderBy('timestamp', 'desc'),
     limit(count)
   );
-
   const querySnapshot = await getDocs(q);
   return querySnapshot.docs.map(doc => {
     const data = doc.data();
@@ -74,16 +59,11 @@ export const getScanHistory = async (uid: string, count: number = 10): Promise<S
       imageUrl: data.imageUrl,
       condition: data.condition,
       confidence: data.confidence,
-      timestamp: data.timestamp.toDate(), // Convert Firestore Timestamp to JS Date
+      timestamp: data.timestamp.toDate(),
     };
   });
 };
 
-/**
- * Adds a new scan result to the 'scanHistory' collection.
- * @param uid - The user's unique ID.
- * @param result - The prediction result object.
- */
 export const addScanResult = async (uid: string, result: { imageUrl: string; condition: string; confidence: number }) => {
     const historyCollection = collection(db, 'scanHistory');
     await addDoc(historyCollection, {
@@ -93,14 +73,15 @@ export const addScanResult = async (uid: string, result: { imageUrl: string; con
     });
 };
 
+// [NEW FUNCTION]
+export const deleteScanResult = async (scanId: string): Promise<void> => {
+    const scanDocRef = doc(db, 'scanHistory', scanId);
+    await deleteDoc(scanDocRef);
+};
+
 
 // --- QUIZ FUNCTIONS ---
-
-/**
- * Fetches the user's current total quiz score and list of answered question IDs.
- * @param uid - The user's unique ID.
- * @returns A promise resolving to an object with the user's quiz stats.
- */
+// ... (your existing getUserQuizStats and updateUserQuizStats functions - no changes needed) ...
 export const getUserQuizStats = async (uid: string): Promise<{ score: number; answeredIds: string[] }> => {
   const userRef = doc(db, 'users', uid);
   const docSnap = await getDoc(userRef);
@@ -111,21 +92,13 @@ export const getUserQuizStats = async (uid: string): Promise<{ score: number; an
       answeredIds: data.answeredQuestionIds || [],
     };
   }
-  return { score: 0, answeredIds: [] }; // Default for new users
+  return { score: 0, answeredIds: [] };
 };
 
-/**
- * Updates a user's quiz stats atomically after a quiz is completed.
- * @param uid - The user's unique ID.
- * @param scoreGained - The number of correct answers in the last session.
- * @param newAnsweredIds - An array of the new question IDs to add to the user's history.
- */
 export const updateUserQuizStats = async (uid: string, scoreGained: number, newAnsweredIds: string[]) => {
   const userRef = doc(db, 'users', uid);
   await updateDoc(userRef, {
-    // Atomically increment the total score by the amount gained in this session.
     quizScore: increment(scoreGained),
-    // Atomically add all new answered question IDs to the existing array, without duplicates.
     answeredQuestionIds: arrayUnion(...newAnsweredIds),
   });
 };

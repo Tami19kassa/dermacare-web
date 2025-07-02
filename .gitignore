@@ -6,6 +6,8 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+model-api
+model-api/app.py
 
 node_modules
 dist
@@ -15,7 +17,7 @@ dist-ssr
 #
 # Explicitly UN-ignore the model-api folder and its contents,
 # even if another rule is accidentally ignoring it.
-!model-api/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -43,6 +45,5 @@ yarn-error.log*
 firebase-debug.log
 
 # Python / Flask API
-model-api/venv/
-model-api/__pycache__/
+ 
 *.pyc
