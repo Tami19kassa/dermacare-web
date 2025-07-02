@@ -1,89 +1,84 @@
-import React, { useRef, useState } from 'react';
+// src/features/main/HeroSection.tsx
+
+import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { performScan, type Prediction } from '../../services/predictionService';
+import toast from 'react-hot-toast';
 import { FiCamera } from 'react-icons/fi';
-import PredictionModal from '../scanner/PredictionModal';
+import { performScan, type Prediction } from '../../services/predictionService';
+import { PredictionModal } from '../scanner/PredictionModal'; // Assuming this is your modal
 
 const HeroSection: React.FC = () => {
-    const { t } = useTranslation();
-    const fileInputRef = useRef<HTMLInputElement>(null);
+  const { t } = useTranslation(); // Use the translation hook
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // --- State to control the Prediction Modal ---
-    // This state is managed by the HeroSection, which is the parent component.
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [predictionResult, setPredictionResult] = useState<Prediction | null>(null);
-    const [scannedImage, setScannedImage] = useState<File | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [predictionResults, setPredictionResults] = useState<Prediction[]>([]);
+  const [scannedImage, setScannedImage] = useState<File | null>(null);
+  const [isScanning, setIsScanning] = useState(false);
 
-    /**
-     * This function is called when the user selects a file from their device.
-     */
-    const handleImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (file) {
-            // 1. Call the performScan service. This will only get the prediction, it will NOT save.
-            const result = await performScan(file);
+  const handleImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setIsScanning(true);
+      const toastId = toast.loading(t('analyzing')); // Use translated text
+      setScannedImage(file);
+      const results = await performScan(file);
+      toast.dismiss(toastId);
+      setIsScanning(false);
+      if (results && results.length > 0) {
+        setPredictionResults(results);
+        setIsModalOpen(true);
+      }
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
 
-            // 2. If the scan was successful, update our state to show the modal.
-            if (result) {
-                setPredictionResult(result);
-                setScannedImage(file); // Pass the original File object to the modal
-                setIsModalOpen(true);
-            }
-        }
-        
-        // Reset the file input so the user can upload the same file again if they want
-        if (fileInputRef.current) {
-            fileInputRef.current.value = "";
-        }
-    };
+  const triggerFileSelect = () => {
+    fileInputRef.current?.click();
+  };
 
-    /**
-     * A helper function to programmatically click our hidden file input element.
-     */
-    const triggerFileSelect = () => {
-        fileInputRef.current?.click();
-    };
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setPredictionResults([]);
+    setScannedImage(null);
+  };
 
-    return (
-        <>
-            {/* The main UI section with the "Upload Image" button */}
-            <section className="text-center">
-                <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleImageChange}
-                    className="hidden"
-                    accept="image/jpeg, image/png"
-                />
-                <div className="bg-gemini-surface-light dark:bg-gemini-surface-dark p-8 rounded-2xl">
-                    <h2 className="text-2xl font-medium mb-2">{t('instant_analysis_title')}</h2>
-                    <p className="text-gemini-text-secondary-light dark:text-gemini-text-secondary-dark mb-6 max-w-lg mx-auto">
-                        {t('instant_analysis_desc')}
-                    </p>
-                    <button
-                        onClick={triggerFileSelect}
-                        className="inline-flex items-center space-x-2 px-6 py-3 font-semibold bg-gemini-blue text-white rounded-full hover:opacity-90 transition-opacity"
-                    >
-                        <FiCamera />
-                        <span>{t('upload_image')}</span>
-                    </button>
-                </div>
-            </section>
+  return (
+    <>
+      <div className="text-center p-8 bg-gemini-surface-dark rounded-2xl">
+        {/* Use the t() function for all user-facing text */}
+        <h2 className="text-3xl font-bold mb-4">{t('hero_title', 'AI-Powered Skin Analysis')}</h2>
+        <p className="text-lg text-gemini-text-secondary-dark mb-6">
+          {t('hero_subtitle', 'Get instant insights into your skin concerns. Just upload a photo.')}
+        </p>
 
-            {/*
-              Render the modal component here.
-              We pass it the state it needs (isOpen, prediction, image) and a function
-              to close itself (onClose). The modal now handles all of its own display
-              and save logic internally.
-            */}
-            <PredictionModal 
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                prediction={predictionResult}
-                scannedImage={scannedImage}
-            />
-        </>
-    );
+        <button
+          onClick={triggerFileSelect}
+          disabled={isScanning}
+          className="inline-flex items-center justify-center gap-2 px-6 py-3 text-white bg-gemini-blue rounded-full font-semibold hover:bg-blue-600 disabled:bg-gray-500 transition-colors"
+        >
+          <FiCamera />
+          <span>{isScanning ? t('analyzing', 'Analyzing...') : t('scan_now', 'Scan Now')}</span>
+        </button>
+
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleImageChange}
+          accept="image/png, image/jpeg"
+          style={{ display: 'none' }}
+        />
+      </div>
+
+      {isModalOpen && (
+        <PredictionModal
+          imageFile={scannedImage}
+          predictions={predictionResults}
+          onClose={handleCloseModal}
+        />
+      )}
+    </>
+  );
 };
 
 export default HeroSection;

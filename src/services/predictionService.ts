@@ -97,4 +97,4 @@ export const saveScanToHistory = async (imageFile: File, topPrediction: Predicti
         condition: topPrediction.condition,
         confidence: topPrediction.confidence * 100,
     });
-};
+}; 

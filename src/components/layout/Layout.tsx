@@ -1,16 +1,12 @@
-import React, { useState } from 'react';
+// src/components/layout/Layout.tsx
 
+import React, { useState } from 'react';
 import LeftSidebar from './LeftSidebar';
 import Header from './Header';
 import MobileDrawer from './MobileDrawer';
 import MainContent from '../../features/main/MainContent';
-
 import ArticleModal from '../../features/info/ArticleModal';
 import RightSidebar from './RightSidebar';
-
-
-
-
 
 const Layout: React.FC = () => {
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -23,13 +19,17 @@ const Layout: React.FC = () => {
                 {/* Large Screen Layout */}
                 <div className="hidden xl:grid grid-cols-12 gap-6 h-full p-4">
                     <aside className="col-span-3 h-full flex flex-col">
+                        {/* This div structure ensures the sidebar content scrolls if it's too long */}
                         <div className="overflow-y-auto flex-1 min-h-0">
                             <LeftSidebar />
                         </div>
                     </aside>
+
+                    {/* This main element forces MainContent to fill the available height */}
                     <main className="col-span-6 h-full flex flex-col min-h-0">
                         <MainContent />
                     </main>
+
                     <aside className="col-span-3 h-full flex flex-col">
                         <div className="overflow-y-auto flex-1 min-h-0">
                             <RightSidebar />
