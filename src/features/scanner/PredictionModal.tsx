@@ -6,13 +6,12 @@ import toast from 'react-hot-toast';
 import { FiSave, FiLoader } from 'react-icons/fi';
 import { type Prediction, saveScanToHistory } from '../../services/predictionService';
 
-interface PredictionModalProps { // Renamed interface
+interface PredictionModalProps {
   imageFile: File | null;
   predictions: Prediction[];
   onClose: () => void;
 }
 
-// Renamed component to PredictionModal and made it a named export
 export const PredictionModal: React.FC<PredictionModalProps> = ({
   imageFile,
   predictions,
@@ -25,6 +24,10 @@ export const PredictionModal: React.FC<PredictionModalProps> = ({
 
   const topPrediction = predictions[0];
 
+  // Check for special case IDs to show specific UI elements
+  const isSeriousCondition = topPrediction?.id === 'malignant_lesion';
+  const isHealthy = topPrediction?.id === 'healthy';
+
   const handleSave = async () => {
     if (!imageFile || !topPrediction) return;
     
@@ -36,7 +39,8 @@ export const PredictionModal: React.FC<PredictionModalProps> = ({
         onClose();
     } catch (error) {
         toast.error('Failed to save to history.', { id: toastId });
-        setIsSaving(false);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -49,6 +53,26 @@ export const PredictionModal: React.FC<PredictionModalProps> = ({
         <h2 className="text-xl font-medium text-center">{t('analysis_complete')}</h2>
         <img src={URL.createObjectURL(imageFile)} alt="Scanned item" className="rounded-lg object-cover w-full h-48"/>
         
+        {/* --- CRITICAL WARNING BLOCK --- */}
+        {isSeriousCondition && (
+          <div className="border-2 border-red-500 bg-red-900/30 p-3 rounded-lg text-center">
+            <h3 className="font-bold text-red-400 text-lg">Potential Serious Condition Detected</h3>
+            <p className="text-sm text-red-300 mt-1">
+              Our analysis suggests a possibility of a malignant lesion. 
+              <strong>This is not a diagnosis.</strong> Please consult a qualified dermatologist immediately for a professional evaluation.
+            </p>
+          </div>
+        )}
+
+        {/* --- "HEALTHY" RESULT BLOCK --- */}
+        {isHealthy && (
+          <div className="border border-green-500 bg-green-900/30 p-3 rounded-lg text-center">
+            <p className="text-sm text-green-300">
+              No specific skin condition was detected in the analysis. For general skin health, continue with your regular skincare routine.
+            </p>
+          </div>
+        )}
+
         <div className="predictions-list space-y-2">
           <p className="font-semibold text-sm text-gemini-text-secondary-dark">{t('top_predictions')}:</p>
           {predictions.map((p, index) => (
@@ -69,7 +93,7 @@ export const PredictionModal: React.FC<PredictionModalProps> = ({
           <button onClick={onClose} disabled={isSaving} className="flex-1 py-2 rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-50">
             {t('discard')}
           </button>
-          <button onClick={handleSave} disabled={isSaving} className="flex-1 py-2 rounded-lg bg-gemini-blue hover:bg-blue-600 font-semibold flex items-center justify-center gap-2 disabled:opacity-50">
+          <button onClick={handleSave} disabled={isSaving || isHealthy} className="flex-1 py-2 rounded-lg bg-gemini-blue hover:bg-blue-600 font-semibold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
             {isSaving ? <FiLoader className="animate-spin"/> : <FiSave />}
             <span>{isSaving ? t('saving') : t('save_to_history')}</span>
           </button>

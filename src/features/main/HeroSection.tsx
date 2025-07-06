@@ -5,11 +5,15 @@ import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { FiCamera } from 'react-icons/fi';
 import { performScan, type Prediction } from '../../services/predictionService';
-import { PredictionModal } from '../scanner/PredictionModal'; // Assuming this is your modal
+import { PredictionModal } from '../scanner/PredictionModal';
+import { useModelStatus } from '../../hooks/useModelStatus'; // <-- IMPORT THE NEW HOOK
 
 const HeroSection: React.FC = () => {
-  const { t } = useTranslation(); // Use the translation hook
+  const { t } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // --- USE THE HOOK TO GET THE MODEL'S STATUS ---
+  const isModelReady = useModelStatus();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [predictionResults, setPredictionResults] = useState<Prediction[]>([]);
@@ -20,9 +24,12 @@ const HeroSection: React.FC = () => {
     const file = event.target.files?.[0];
     if (file) {
       setIsScanning(true);
-      const toastId = toast.loading(t('analyzing')); // Use translated text
+      const toastId = toast.loading(t('analyzing'));
       setScannedImage(file);
+      
+      // We no longer need to check if model is initialized here, the button being enabled is the check.
       const results = await performScan(file);
+      
       toast.dismiss(toastId);
       setIsScanning(false);
       if (results && results.length > 0) {
@@ -46,7 +53,6 @@ const HeroSection: React.FC = () => {
   return (
     <>
       <div className="text-center p-8 bg-gemini-surface-dark rounded-2xl">
-        {/* Use the t() function for all user-facing text */}
         <h2 className="text-3xl font-bold mb-4">{t('hero_title', 'AI-Powered Skin Analysis')}</h2>
         <p className="text-lg text-gemini-text-secondary-dark mb-6">
           {t('hero_subtitle', 'Get instant insights into your skin concerns. Just upload a photo.')}
@@ -54,11 +60,19 @@ const HeroSection: React.FC = () => {
 
         <button
           onClick={triggerFileSelect}
-          disabled={isScanning}
-          className="inline-flex items-center justify-center gap-2 px-6 py-3 text-white bg-gemini-blue rounded-full font-semibold hover:bg-blue-600 disabled:bg-gray-500 transition-colors"
+          // --- UPDATE THE DISABLED LOGIC ---
+          disabled={isScanning || !isModelReady} 
+          className="inline-flex items-center justify-center gap-2 px-6 py-3 text-white bg-gemini-blue rounded-full font-semibold hover:bg-blue-600 disabled:bg-gray-500 disabled:cursor-wait transition-colors"
         >
           <FiCamera />
-          <span>{isScanning ? t('analyzing', 'Analyzing...') : t('scan_now', 'Scan Now')}</span>
+          {/* --- UPDATE THE BUTTON TEXT --- */}
+          <span>
+            {isScanning 
+              ? t('analyzing', 'Analyzing...') 
+              : !isModelReady 
+                ? 'Initializing AI...' 
+                : t('scan_now', 'Scan Now')}
+          </span>
         </button>
 
         <input

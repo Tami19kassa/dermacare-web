@@ -1,81 +1,47 @@
 // src/services/predictionService.ts
 
-
 import { storage, auth } from '../firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { addScanResult } from './firestoreService';
 import toast from 'react-hot-toast';
-import axios from 'axios';
 
-// --- Type Definitions ---
-// FIX: Added the 'export' keyword so other files can import this type.
+// Import our local model's prediction function
+import { runPrediction } from './tfjsService';
+
+// This is the updated, shared type definition for a prediction result
 export interface Prediction {
     condition: string;
     confidence: number;
+    id?: string; // The special ID for handling logic (e.g., 'malignant_lesion')
 }
-// This interface is only used inside this file, so it doesn't need to be exported.
-interface RoboflowPrediction {
-    class: string;
-    confidence: number;
-}
-
-// --- Roboflow API Configuration ---
-const ROBOFLOW_API_URL = "https://serverless.roboflow.com/derma-net/3";
-const ROBOFLOW_API_KEY = "UZumwpeO58u6QqmbEDeW";
-
-// --- Helper Functions ---
-const toBase64 = (file: File): Promise<string> => new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => {
-        const base64String = (reader.result as string).split(',')[1];
-        resolve(base64String);
-    };
-    reader.onerror = error => reject(error);
-});
-
-// --- Exported Service Functions ---
 
 /**
- * 1. GETS PREDICTIONS FROM ROBOFLOW
- * This function ONLY gets the analysis. It does NOT save to the database.
+ * 1. PERFORMS A SCAN USING THE LOCAL TENSORFLOW.JS MODEL
+ * This function gets the analysis from the browser, not an external API.
  * @param imageFile The image file selected by the user.
  * @returns An array of the top 3 predictions, or null on failure.
  */
 export const performScan = async (imageFile: File): Promise<Prediction[] | null> => {
     try {
-        const base64Image = await toBase64(imageFile);
-        const response = await axios({
-            method: "POST",
-            url: ROBOFLOW_API_URL,
-            params: { api_key: ROBOFLOW_API_KEY },
-            data: base64Image,
-            headers: { "Content-Type": "application/x-www-form-urlencoded" }
-        });
+        const results = await runPrediction(imageFile);
         
-        if (!response.data || !response.data.predictions || response.data.predictions.length === 0) {
-            toast.error("Could not identify a condition.");
+        if (!results || results.length === 0) {
+            toast.error("Could not identify a condition from the image.");
             return null;
         }
 
-        const predictions: RoboflowPrediction[] = response.data.predictions;
-        const sortedPredictions = predictions.sort((a, b) => b.confidence - a.confidence);
-        
-        return sortedPredictions.slice(0, 3).map(p => ({
-            condition: p.class,
-            confidence: p.confidence
-        }));
+        return results;
 
     } catch (error: any) {
-        console.error("Full scan error details:", error);
-        toast.error(error.response?.data?.message || "An unexpected analysis error occurred.");
+        console.error("Local scan error:", error);
+        toast.error(error.message || "An unexpected analysis error occurred.");
         return null;
     }
 };
 
 /**
  * 2. SAVES A SCAN RESULT TO HISTORY
- * This function is called ONLY when the user clicks the "Save" button.
+ * (This function does not need any changes)
  * @param imageFile The original image file.
  * @param topPrediction The single best prediction to save.
  */
@@ -91,10 +57,10 @@ export const saveScanToHistory = async (imageFile: File, topPrediction: Predicti
     await uploadBytes(storageRef, imageFile);
     const imageUrl = await getDownloadURL(storageRef);
 
-    // Save the complete record to Firestore using the function from firestoreService
+    // Save the complete record to Firestore
     await addScanResult(user.uid, {
         imageUrl: imageUrl,
         condition: topPrediction.condition,
-        confidence: topPrediction.confidence * 100,
+        confidence: topPrediction.confidence * 100, // Save confidence as a percentage
     });
-}; 
+};
