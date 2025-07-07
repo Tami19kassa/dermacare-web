@@ -17,20 +17,13 @@ const labels = [
 ];
 
 let modelPromise: Promise<tf.GraphModel> | null = null;
-// In your Vite/React project's JavaScript file
-
 export const initializeModel = (): Promise<tf.GraphModel> => {
     if (!modelPromise) {
-        console.log('Initializing TF.js model from GitHub...');
-        
-        // This is your specific, correct URL
-        const GITHUB_MODEL_URL = 'https://cdn.jsdelivr.net/gh/abate1162/bn/final_tfjs_model/model.json';
-        
-        modelPromise = tf.loadGraphModel(GITHUB_MODEL_URL);
-        
-        modelPromise.then(() => console.log('✅ TF.js model loaded successfully!'))
+        console.log('Initializing TF.js model...');
+        modelPromise = tf.loadGraphModel('/tfjs_model/model.json');
+        modelPromise.then(() => console.log('✅ TF.js model loaded and ready!'))
                    .catch(err => {
-                      console.error('🔥 Failed to load model:', err);
+                      console.error('🔥 Failed to load TF.js model:', err);
                       modelPromise = null; 
                    });
     }
