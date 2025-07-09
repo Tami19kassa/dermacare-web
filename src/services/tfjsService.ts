@@ -62,7 +62,7 @@ export const runPrediction = async (imageFile: File): Promise<Prediction[] | nul
       // Create a URL-friendly ID from the class name for consistency
       id: p.className.toLowerCase().replace(/ /g, '_').replace(/[()]/g, '')
     }))
-    .sort((a, b) => b.confidence - a.confidence);
+    .sort((a, b) => b.confidence - a.confidence);   
 
   // Clean up the object URL
   URL.revokeObjectURL(imageElement.src);
