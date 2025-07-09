@@ -91,7 +91,7 @@ const HeroSection: React.FC = () => {
           onClose={handleCloseModal}
         />
       )}
-    </>   
+    </>
   );
 };
 

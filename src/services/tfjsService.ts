@@ -1,86 +1,72 @@
-import * as tf from '@tensorflow/tfjs';
+// src/services/tfjsService.ts
+
+// Step 1: Import the necessary libraries
+import * as tf from '@tensorflow/tfjs'; // Still needed as a dependency
+import * as tmImage from '@teachablemachine/image'; // The new Teachable Machine library
 import { type Prediction } from './predictionService';
 
-// Ensure the labels are in the correct order as during training.
-const labels = [
-    "Acne And Rosacea",
-    "Ba Impetigo",
-    "Eczema",
-    "Fu Ringworm",
-    "Healthy", // Corrected the typo from 'Heathy'
-    "Healthy Skin",
-    "Psoriasis Pictures Lichen Planus And Related Diseases",
-    "Urticaria Hives",
-    "Vi Shingles",
-    "Warts Molluscum And Other Viral Infections",
-    "Vitiligo" // Capitalized for consistency
-];
+// Step 2: Define the path to your model in the `public` folder
+// This path is relative to the root of your web server.
+const MODEL_URL = '/tm_model/'; // Path to the folder containing your model files
 
-let modelPromise: Promise<tf.GraphModel> | null = null;
-export const initializeModel = (): Promise<tf.GraphModel> => {
-    if (!modelPromise) {
-        console.log('Initializing TF.js model...');
-        modelPromise = tf.loadGraphModel('/tfjs_model/model.json');
-        modelPromise.then(() => console.log('✅ TF.js model loaded and ready!'))
-                   .catch(err => {
-                      console.error('🔥 Failed to load TF.js model:', err);
-                      modelPromise = null; 
-                   });
-    }
-    return modelPromise;
+// Step 3: Modify the model initialization
+let modelPromise: Promise<tmImage.CustomMobileNet> | null = null;
+
+export const initializeModel = (): Promise<tmImage.CustomMobileNet> => {
+  if (!modelPromise) {
+    console.log('Initializing Teachable Machine model...');
+    const modelURL = MODEL_URL + 'model.json';
+    const metadataURL = MODEL_URL + 'metadata.json';
+    
+    // Use tmImage.load() which is designed for these models
+    modelPromise = tmImage.load(modelURL, metadataURL);
+    
+    modelPromise
+      .then(() => console.log('✅ Teachable Machine model loaded and ready!'))
+      .catch(err => {
+        console.error('🔥 Failed to load Teachable Machine model:', err);
+        modelPromise = null; 
+      });
+  }
+  return modelPromise;
 };
 
 /**
- * Runs a prediction using the TF.js API with robust preprocessing.
+ * Runs a prediction using the Teachable Machine library, which simplifies preprocessing.
  */
-// --- CORRECTED runPrediction FUNCTION ---
-
 export const runPrediction = async (imageFile: File): Promise<Prediction[] | null> => {
-    if (!modelPromise) {
-        throw new Error('Model not initialized. Call initializeModel() first.');
-    }
+  if (!modelPromise) {
+    throw new Error('Model not initialized. Call initializeModel() first.');
+  }
 
-    const model = await modelPromise;
-    const imageElement = document.createElement('img');
-    imageElement.src = URL.createObjectURL(imageFile);
-    
-    await new Promise((resolve, reject) => {
-        imageElement.onload = resolve;
-        imageElement.onerror = reject;
-    });
+  const model = await modelPromise;
 
-    const tensor = tf.tidy(() => {
-        // 1. Create a tensor from the image element [0, 255]
-        const imgTensor = tf.browser.fromPixels(imageElement);
+  // Create an HTMLImageElement to pass to the model. The library handles the rest.
+  const imageElement = document.createElement('img');
+  imageElement.src = URL.createObjectURL(imageFile);
+  await new Promise(resolve => (imageElement.onload = resolve));
 
-        // 2. Resize to the model's expected input size (128x128)
-        const resizedTensor = tf.image.resizeBilinear(imgTensor, [128, 128]);
+  // --- The Teachable Machine library handles all preprocessing internally! ---
+  // No need for canvas, manual tensor creation, or normalization.
 
-        // 3. Normalize the pixel values from [0, 255] to [0, 1]
-        //    THIS IS THE CRITICAL FIX!
-        const floatTensor = resizedTensor.toFloat();
+  // Run the model prediction directly on the image element
+  const predictionResult = await model.predict(imageElement);
 
-        // 4. Add a batch dimension to match the model's input shape [1, 128, 128, 3]
-        return floatTensor.expandDims();
-    });
+  // Process the prediction results
+  const processedPredictions = predictionResult
+    .map(p => ({
+      // The class name comes directly from the model's metadata
+      condition: p.className,
+      // The probability is the confidence score
+      confidence: p.probability,
+      // Create a URL-friendly ID from the class name for consistency
+      id: p.className.toLowerCase().replace(/ /g, '_').replace(/[()]/g, '')
+    }))
+    .sort((a, b) => b.confidence - a.confidence);
 
-    // Run the model prediction
-    const result = model.predict(tensor) as tf.Tensor;
-    const rawPredictions = await result.data() as Float32Array;
+  // Clean up the object URL
+  URL.revokeObjectURL(imageElement.src);
 
-    // ... (rest of your code is fine) ...
-    const processedPredictions = Array.from(rawPredictions)
-        .map((confidence, index) => ({
-            id: labels[index] || 'unknown',
-            condition: labels[index] || 'unknown',
-            confidence: confidence
-        }))
-        .sort((a, b) => b.confidence - a.confidence);
-
-    // Clean up resources
-    tensor.dispose();
-    result.dispose();
-    URL.revokeObjectURL(imageElement.src);
-
-    return processedPredictions.slice(0, 3);
+  // Return the top 3 predictions
+  return processedPredictions.slice(0, 3);
 };
