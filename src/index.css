@@ -1,28 +1,24 @@
-/* Keep the existing @tailwind directives at the top */
+ 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* --- ADD THIS NEW CODE --- */
-/* Custom Gemini-style scrollbar for a polished look */
+  
 ::-webkit-scrollbar {
-  width: 8px; /* Width of the scrollbar */
-  height: 8px; /* Height for horizontal scrollbars */
+  width: 8px;  
+  height: 8px;  
 }
-
-/* The track (the background of the scrollbar) */
+ 
 ::-webkit-scrollbar-track {
   background-color: transparent;
 }
-
-/* The thumb (the draggable part of the scrollbar) */
+ 
 ::-webkit-scrollbar-thumb {
-  background-color: #5f6368; /* A neutral gray from our palette */
+  background-color: #5f6368;  
   border-radius: 10px;
-  border: 2px solid transparent; /* Creates padding around the thumb */
+  border: 2px solid transparent;  
   background-clip: content-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: #9aa0a6; /* A lighter gray on hover */
+  background-color: #9aa0a6;  
 }

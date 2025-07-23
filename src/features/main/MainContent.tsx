@@ -39,19 +39,7 @@ const MainContent: React.FC = () => {
     const [typingText, setTypingText] = useState('');
 
     const fileInputRef = useRef<HTMLInputElement>(null);
-    // REMOVED: The ref for the messages container is no longer needed for scrolling.
-    // const messagesContainerRef = useRef<HTMLDivElement>(null);
-
-    // REMOVED: The manual scrolling effect is no longer needed with flex-col-reverse.
-    /*
-    useEffect(() => {
-        if (messagesContainerRef.current) {
-            messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
-        }
-    }, [messages, isTyping, typingText]);
-    */
-
-    // Effect for typing animation
+     
     useEffect(() => {
         if (isTyping && currentChunkIndex < typingChunks.length) {
             const timer = setTimeout(() => {

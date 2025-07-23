@@ -5,7 +5,7 @@ import LeftSidebar from './LeftSidebar';
 import Header from './Header';
 import MobileDrawer from './MobileDrawer';
 import MainContent from '../../features/main/MainContent';
-import ArticleModal from '../../features/info/ArticleModal';
+ 
 import RightSidebar from './RightSidebar';
 
 const Layout: React.FC = () => {
@@ -57,7 +57,7 @@ const Layout: React.FC = () => {
             </div>
             
             <MobileDrawer isOpen={isDrawerOpen} setIsOpen={setIsDrawerOpen} />
-            <ArticleModal />
+           
         </div>
     );
 };

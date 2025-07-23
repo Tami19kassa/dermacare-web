@@ -1,5 +1,3 @@
-// src/services/firestoreService.ts
-
 import { db } from '../firebase';
 import {
   doc,
@@ -14,7 +12,7 @@ import {
   getDocs,
   serverTimestamp,
   addDoc,
-  deleteDoc, // Make sure this is imported
+  deleteDoc, 
   increment,
   arrayUnion,
 } from 'firebase/firestore';
@@ -79,9 +77,7 @@ export const deleteScanResult = async (scanId: string): Promise<void> => {
     await deleteDoc(scanDocRef);
 };
 
-
-// --- QUIZ FUNCTIONS ---
-// ... (your existing getUserQuizStats and updateUserQuizStats functions - no changes needed) ...
+ 
 export const getUserQuizStats = async (uid: string): Promise<{ score: number; answeredIds: string[] }> => {
   const userRef = doc(db, 'users', uid);
   const docSnap = await getDoc(userRef);

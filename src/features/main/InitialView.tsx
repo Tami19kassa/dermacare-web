@@ -7,7 +7,7 @@ import HeroSection from './HeroSection';
 import Carousel from './Carousel';
 import InfoHub from '../info/InfoHub';
 import Contact from '../info/Contact';
-import Feedback from '../info/Feedback';
+ 
 import Footer from '../info/Footer';
 import SkinDiseaseInfoModal from '../info/SkinDiseaseInfoModal';
 
@@ -20,6 +20,7 @@ import {
   PiCircleDashedBold, PiCouchBold, PiPersonSimpleRunBold, PiPlantBold, PiLightningBold, PiStickerBold,
   PiCirclesFourBold, PiPaintBrushHouseholdBold, PiMosqueBold, PiCircle
 } from 'react-icons/pi';
+import About from '../info/About';
 
 // --- THIS IS THE ICON MAP ---
 // It maps the disease 'id' string from our data to an actual React icon component.
@@ -101,7 +102,7 @@ const InitialView: React.FC = () => {
         </section>
         
         <Contact />
-        <Feedback />
+        <About />
         <Footer />
       </div>
       

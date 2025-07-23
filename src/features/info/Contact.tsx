@@ -9,12 +9,11 @@ const Contact: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-
-    // Simulate sending the message
+ 
     setTimeout(() => {
       toast.success("Your message has been sent!");
       setIsLoading(false);
-      // Here you would typically clear the form fields
+   
       (e.target as HTMLFormElement).reset();
     }, 1500);
   };

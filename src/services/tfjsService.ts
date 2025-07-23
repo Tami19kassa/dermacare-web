@@ -1,62 +1,93 @@
  
+import * as tf from '@tensorflow/tfjs';
 
-import * as tmImage from '@teachablemachine/image'; // The new Teachable Machine library
-import { type Prediction } from './predictionService';
+export interface Prediction {
+  id: string;
+  condition: string;  
+  confidence: number;  
+}
 
+const MODEL_URL = '/model/model.json';
+const METADATA_URL = '/model/metadata.json';
 
-// Step 2: Define the path to your model in the `public` folder
-// This path is relative to the root of your web server.
-const MODEL_URL = '/tm_model/'; // Path to the folder containing your model files
+ 
+let model: tf.LayersModel | null = null;
+let metadata: { labels: string[] } | null = null;
+ 
+let modelPromise: Promise<{ model: tf.LayersModel; metadata: any }> | null = null;
 
-// Step 3: Modify the model initialization
-let modelPromise: Promise<tmImage.CustomMobileNet> | null = null;
-
-export const initializeModel = (): Promise<tmImage.CustomMobileNet> => {
-  if (!modelPromise) {
-    console.log('Initializing Teachable Machine model...');
-    const modelURL = MODEL_URL + 'model.json';
-    const metadataURL = MODEL_URL + 'metadata.json';
-    
-    // Use tmImage.load() which is designed for these models
-    modelPromise = tmImage.load(modelURL, metadataURL);
-    
-    modelPromise
-      .then(() => console.log('✅ Teachable Machine model loaded and ready!'))
-      .catch(err => {
-        console.error('🔥 Failed to load Teachable Machine model:', err);
-        modelPromise = null; 
-      });
+// --- Initialize the model and load metadata ---
+export const initializeModel = (): Promise<{ model: tf.LayersModel; metadata: any }> => {
+  if (modelPromise) {
+    return modelPromise;
   }
+
+  console.log('Initializing TensorFlow.js model...');
+
+  modelPromise = new Promise(async (resolve, reject) => {
+    try {
+      // 1. Load the model topology and weights
+      const loadedModel = await tf.loadLayersModel(MODEL_URL);
+      model = loadedModel;
+
+      // 2. Fetch and parse the metadata
+      const metadataResponse = await fetch(METADATA_URL);
+      const loadedMetadata = await metadataResponse.json();
+      metadata = loadedMetadata;
+
+      console.log('✅ TensorFlow.js model and metadata loaded successfully!');
+      resolve({ model, metadata });
+    } catch (err) {
+      console.error('🔥 Failed to load TensorFlow.js model or metadata:', err);
+      modelPromise = null; // Reset on failure
+      reject(err);
+    }
+  });
+
   return modelPromise;
 };
- 
 
-export const runPrediction = async (imageFile: File): Promise<Prediction[] | null> => {
-  if (!modelPromise) {
+// --- Run prediction on an image file ---
+export const runPrediction = async (imageFile: File): Promise<Prediction[]> => {
+  // 1. Ensure the model is loaded before proceeding
+  if (!model || !metadata) {
     throw new Error('Model not initialized. Call initializeModel() first.');
   }
-  
-  const model = await modelPromise;
 
- 
+  // 2. Create an HTMLImageElement from the file
   const imageElement = document.createElement('img');
   imageElement.src = URL.createObjectURL(imageFile);
-  await new Promise(resolve => (imageElement.onload = resolve));
+  await new Promise((resolve, reject) => {
+    imageElement.onload = resolve;
+    imageElement.onerror = reject;
+  });
 
- 
-  const predictionResult = await model.predict(imageElement);
+  // 3. Pre-process the image into a tensor
+  //    - Teachable Machine models are typically trained on 224x224 images.
+  //    - Normalization scales pixel values from [0, 255] to [-1, 1].
+  const imageTensor = tf.browser.fromPixels(imageElement)
+    .resizeNearestNeighbor([224, 224]) // Resize the image
+    .toFloat()
+    .expandDims(0) // Add a batch dimension
+    .div(127.5) // Normalize pixel values to [0, 2]
+    .sub(1.0); // Normalize to [-1, 1]
 
-  // Clean up the object URL
+  // 4. Run the prediction
+  const predictions = model.predict(imageTensor) as tf.Tensor;
+  const predictionData = await predictions.data(); // Get the raw probability array
+
+  // 5. Clean up memory
+  tf.dispose([imageTensor, predictions]);
   URL.revokeObjectURL(imageElement.src);
 
-  // Process and sort the results
-  const processedPredictions = predictionResult
-    .map(p => ({
-      condition: p.className,
-      confidence: p.probability,
-      id: p.className.toLowerCase().replace(/ /g, '_').replace(/[()]/g, '')
+  // 6. Process the results
+  const processedPredictions = Array.from(predictionData)
+    .map((confidence, index) => ({
+      confidence: confidence as number,
+      condition: metadata!.labels[index], // Get class name from metadata
+      id: metadata!.labels[index].toLowerCase().replace(/ /g, '_').replace(/[()]/g, ''),
     }))
-    .sort((a, b) => b.confidence - a.confidence);
+    .sort((a, b) => b.confidence - a.confidence); // Sort by highest confidence
 
-  return processedPredictions.slice(0, 3);
+  return processedPredictions.slice(0, 3); // Return the top 3 results
 };

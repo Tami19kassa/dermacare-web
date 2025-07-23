@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, type ReactNode } from 'react';
-import { onAuthStateChanged, type User } from 'firebase/auth'; // <--- THE FIX IS HERE
+import { onAuthStateChanged, type User } from 'firebase/auth'; 
 import { auth } from '../firebase';
 import { Spinner } from '../components/Spinner';
 
