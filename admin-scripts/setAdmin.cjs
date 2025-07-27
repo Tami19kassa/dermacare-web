@@ -1,12 +1,12 @@
 // admin-scripts/setAdmin.js
 const admin = require('firebase-admin');
-const serviceAccount = require('./path/to/your/serviceAccountKey.json'); // Download this from Firebase project settings
+const serviceAccount = require('./serviceAccountKey.json'); // Download this from Firebase project settings
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
 });
 
-const userEmailToMakeAdmin = 'your-admin-email@example.com';
+const userEmailToMakeAdmin = 'dermacareteam@gmail.com';
 
 async function setAdminClaim() {
   try {
