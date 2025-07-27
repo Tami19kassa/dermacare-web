@@ -28,7 +28,7 @@ const Carousel: React.FC = () => {
     useEffect(() => {
         const timer = setTimeout(() => {
             nextSlide();
-        }, 6000); // Change slide every 6 seconds
+        }, 6000);  
         return () => clearTimeout(timer);
     }, [currentIndex]);
 

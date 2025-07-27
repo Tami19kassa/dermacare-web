@@ -1,4 +1,4 @@
-// src/components/ConfirmModal.tsx
+ 
 
 import React from 'react';
 import { useTranslation } from 'react-i18next';

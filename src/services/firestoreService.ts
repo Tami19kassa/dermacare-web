@@ -1,5 +1,6 @@
 import { db } from '../firebase';
 import {
+  onSnapshot, 
   doc,
   setDoc,
   getDoc,
@@ -16,6 +17,60 @@ import {
   increment,
   arrayUnion,
 } from 'firebase/firestore';
+
+export interface FeedbackMessage {
+  id: string;
+  userId: string;
+  userEmail: string;
+  message: string;
+  timestamp: Date;
+  status: 'new' | 'read' | 'resolved';
+  isFromAdmin: boolean;
+}
+
+export const sendFeedbackMessage = async (uid: string, email: string, message: string): Promise<void> => {
+  const feedbackCollection = collection(db, 'user_feedback');
+  await addDoc(feedbackCollection, {
+    userId: uid,
+    userEmail: email,
+    message: message,
+    timestamp: serverTimestamp(),
+    status: 'new',
+    isFromAdmin: false,
+  });
+};
+
+/**
+ * [ADMIN ONLY] Subscribes to all new feedback messages in real-time.
+ * @param callback The function to call with the new list of messages.
+ * @returns An unsubscribe function from onSnapshot.
+ */
+export const subscribeToAllFeedback = (callback: (messages: FeedbackMessage[]) => void) => {
+  const feedbackCollection = collection(db, 'user_feedback');
+  const q = query(
+    feedbackCollection,
+    where('status', '==', 'new'),
+    orderBy('timestamp', 'asc')
+  );
+
+  // Return the unsubscribe function so the component can clean up the listener
+  return onSnapshot(q, (snapshot) => {
+    const messages = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+      timestamp: doc.data().timestamp?.toDate(),
+    } as FeedbackMessage));
+    callback(messages);
+  });
+};
+
+/**
+ * [ADMIN ONLY] Updates the status of a specific feedback message.
+ */
+export const updateFeedbackStatus = async (messageId: string, newStatus: 'read' | 'resolved'): Promise<void> => {
+  const messageRef = doc(db, 'user_feedback', messageId);
+  await updateDoc(messageRef, { status: newStatus });
+};
 
 // Define and EXPORT a type for Scan History items for type safety
 export interface ScanHistoryItem {

@@ -1,3 +1,5 @@
+# Firebase service account key (SECRET)
+admin-scripts/serviceAccountKey.json
 # Logs
 logs
 *.log
