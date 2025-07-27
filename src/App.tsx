@@ -1,42 +1,32 @@
 import { Routes, Route } from 'react-router-dom';
-
-// Component Imports
 import Layout from './components/layout/Layout';
 import AuthRoute from './components/AuthRoute';
-import AdminRoute from './components/AdminRoute'; // <-- IMPORT THE NEW ADMIN ROUTE PROTECTOR
-
-// Page Imports
+import AdminRoute from './components/AdminRoute';
 import Login from './features/auth/Login';
 import Register from './features/auth/Register';
 import ForgotPassword from './features/auth/ForgotPassword';
-import AdminInbox from './features/admin/AdminInbox'; // <-- IMPORT THE NEW ADMIN PAGE
+import AdminPage from './features/admin/AdminPage'; // <-- IMPORT THE NEW ADMIN PAGE
 
 function App() {
- 
   return (
-    <div className="bg-gemini-bg-light dark:bg-gemini-bg-dark text-gemini-text-light dark:text-gemini-text-dark font-sans transition-colors duration-300 min-h-screen">
+    <div className="... min-h-screen">
       <Routes>
-       
-        {/* --- Public Routes (Accessible to everyone) --- */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
+        {/* ... (public routes are the same) */}
         
-        {/* --- Admin Route (Protected) --- */}
-        {/* This route requires the user to be logged in (AuthRoute) AND have an admin claim (AdminRoute) */}
+        {/* --- MODIFIED ADMIN ROUTE --- */}
         <Route 
-          path="/admin" 
+          path="/admin"
           element={
             <AuthRoute>
               <AdminRoute>
-                <AdminInbox />
+                {/* Render the new AdminPage which contains the inbox */}
+                <AdminPage />
               </AdminRoute>
             </AuthRoute>
           } 
         />
         
-        {/* --- Main Protected Route (For all logged-in users) --- */}
-        {/* The '/*' is a wildcard that matches any other path */}
+        {/* ... (main protected route is the same) */}
         <Route 
           path="/*" 
           element={

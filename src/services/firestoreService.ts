@@ -50,7 +50,7 @@ export const subscribeToAllFeedback = (callback: (messages: FeedbackMessage[]) =
   const q = query(
     feedbackCollection,
     where('status', '==', 'new'),
-    orderBy('timestamp', 'asc')
+    orderBy('timestamp', 'desc') // <-- CHANGE: 'asc' to 'desc' for newest first
   );
 
   // Return the unsubscribe function so the component can clean up the listener
