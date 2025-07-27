@@ -9,37 +9,50 @@ interface AdminRouteProps {
 
 const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
   const { user } = useAuth();
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  
+  // Use a more descriptive state: 'checking', 'isAdmin', 'isNotAdmin'
+  const [authStatus, setAuthStatus] = useState<'checking' | 'isAdmin' | 'isNotAdmin'>('checking');
 
   useEffect(() => {
     const checkAdminStatus = async () => {
       if (user) {
-        const idTokenResult = await user.getIdTokenResult();
-        // The custom claim is on the token object
-        if (idTokenResult.claims.admin === true) {
-          setIsAdmin(true);
-        } else {
-          setIsAdmin(false);
+        try {
+          // Force a refresh of the token to get the latest custom claims
+          const idTokenResult = await user.getIdTokenResult(true); 
+          
+          if (idTokenResult.claims.admin === true) {
+            setAuthStatus('isAdmin');
+          } else {
+            setAuthStatus('isNotAdmin');
+          }
+        } catch (error) {
+          console.error("Error verifying admin token:", error);
+          setAuthStatus('isNotAdmin');
         }
       } else {
-        setIsAdmin(false);
+        // If there's no user, they are definitely not an admin
+        setAuthStatus('isNotAdmin');
       }
     };
+    
     checkAdminStatus();
   }, [user]);
 
-  // Show a loading spinner while we verify the token
-  if (isAdmin === null) {
+  // --- RENDER LOGIC ---
+
+  // 1. While we are checking the token, show a full screen spinner.
+  // This prevents the child components from mounting and trying to fetch data too early.
+  if (authStatus === 'checking') {
     return <Spinner fullScreen />;
   }
 
-  // If the user is not an admin, redirect them to the home page
-  if (!isAdmin) {
-    return <Navigate to="/" replace />;
+  // 2. If the user is confirmed to be an admin, render the children (the AdminPage).
+  if (authStatus === 'isAdmin') {
+    return <>{children}</>;
   }
-
-  // If the user is an admin, render the children (the admin page)
-  return <>{children}</>;
+  
+  // 3. If the check is complete and the user is NOT an admin, redirect them.
+  return <Navigate to="/" replace />;
 };
 
 export default AdminRoute;
