@@ -1,24 +1,46 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { useAuth } from '../../hooks/useAuth'; // <-- IMPORT useAuth
-import { sendFeedbackMessage } from '../../services/firestoreService'; // <-- IMPORT your service function
+import { useAuth } from '../../hooks/useAuth'; // <-- STEP 1: IMPORT useAuth HOOK
+import { sendFeedbackMessage } from '../../services/firestoreService'; // <-- STEP 2: IMPORT YOUR SERVICE FUNCTION
 
 const Contact: React.FC = () => {
   const { t } = useTranslation();
-  const { user } = useAuth(); // <-- Get the currently logged-in user
+  const { user } = useAuth(); // <-- STEP 3: GET THE CURRENTLY LOGGED-IN USER
   const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState('');
-  const [fullName, setFullName] = useState(''); // State for name
-  const [email, setEmail] = useState(user?.email || ''); // State for email, pre-filled if available
+  
+  // Create state to hold the form data
+  const [formData, setFormData] = useState({
+    fullName: '',
+    email: '',
+    message: '',
+  });
 
+  // Effect to pre-fill the email if the user is logged in
+  useEffect(() => {
+    if (user?.email) {
+      setFormData(prev => ({ ...prev, email: user.email! }));
+    }
+  }, [user]);
+
+  // Handle changes to any input field
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  // --- STEP 4: IMPLEMENT THE SUBMIT LOGIC ---
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Guard clause: User must be logged in to send a message.
     if (!user) {
       toast.error("You must be logged in to send a message.");
       return;
     }
-    if (!message.trim() || !fullName.trim() || !email.trim()) {
+    
+    // Simple validation
+    if (!formData.fullName.trim() || !formData.email.trim() || !formData.message.trim()) {
         toast.error("Please fill out all fields.");
         return;
     }
@@ -27,14 +49,17 @@ const Contact: React.FC = () => {
     
     try {
       // Use the service function to send the data to Firestore
-      await sendFeedbackMessage(user.uid, email, message.trim());
+      await sendFeedbackMessage(user.uid, formData.email, formData.message);
+      
       toast.success("Your message has been sent successfully!");
       
-      // Reset the form after successful submission
-      setMessage('');
-      setFullName('');
-      setEmail(user.email || ''); // Reset email to default
-      (e.target as HTMLFormElement).reset(); // This helps clear form fields visually
+      // Reset the form fields after successful submission
+      setFormData({
+        fullName: '',
+        email: user.email || '', // Keep email pre-filled
+        message: '',
+      });
+
     } catch (error) {
       toast.error("Failed to send message. Please try again later.");
       console.error("Feedback submission error:", error);
@@ -53,35 +78,44 @@ const Contact: React.FC = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <input 
             type="text" 
+            name="fullName" // Add name attribute
             placeholder={t('full_name')} 
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
+            value={formData.fullName}
+            onChange={handleChange}
             className="w-full p-3 bg-gemini-bg-light dark:bg-gemini-bg-dark rounded-lg focus:outline-none focus:ring-2 focus:ring-gemini-blue" 
             required 
           />
           <input 
             type="email" 
+            name="email" // Add name attribute
             placeholder={t('email')}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            value={formData.email}
+            onChange={handleChange}
             className="w-full p-3 bg-gemini-bg-light dark:bg-gemini-bg-dark rounded-lg focus:outline-none focus:ring-2 focus:ring-gemini-blue" 
             required 
           />
           <textarea 
+            name="message" // Add name attribute
             placeholder={t('your_message')} 
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
+            value={formData.message}
+            onChange={handleChange}
             rows={4} 
             className="w-full p-3 bg-gemini-bg-light dark:bg-gemini-bg-dark rounded-lg focus:outline-none focus:ring-2 focus:ring-gemini-blue"
             required
           ></textarea>
           <button 
             type="submit" 
-            disabled={isLoading || !user} // Also disable if not logged in
+            disabled={isLoading || !user} // Also disable the button if the user is not logged in
             className="px-5 py-2.5 font-semibold bg-gemini-blue text-white rounded-full hover:opacity-90 disabled:opacity-50"
           >
             {isLoading ? t('sending') : t('send_message')}
           </button>
+          
+          {!user && (
+              <p className="text-xs text-center text-amber-400">
+                  Please log in to send a message.
+              </p>
+          )}
         </form>
       </div>
     </section>
