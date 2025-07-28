@@ -1,20 +1,28 @@
-// src/features/main/HeroSection.tsx
-
 import React, { useState, useRef } from 'react';
-import { useTranslation } from 'react-i18next';
+// --- REMOVE THIS IMPORT --- It's no longer needed here
+// import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { FiCamera } from 'react-icons/fi';
+import { FiCamera, FiLoader } from 'react-icons/fi';
 import { performScan, type Prediction } from '../../services/predictionService';
 import { PredictionModal } from '../scanner/PredictionModal';
-import { useModelStatus } from '../../hooks/useModelStatus'; // <-- IMPORT THE NEW HOOK
+import { useModelStatus } from '../../hooks/useModelStatus';
+import { type TFunction } from 'i18next'; // <-- IMPORT THE TYPE FOR 't'
 
-const HeroSection: React.FC = () => {
-  const { t } = useTranslation();
+// --- START: MODIFIED PROPS ---
+interface HeroSectionProps {
+  t: TFunction; // Add 't' function as a required prop
+}
+
+const HeroSection: React.FC<HeroSectionProps> = ({ t }) => { // <-- ACCEPT THE PROP
+  // --- END: MODIFIED PROPS ---
+  
+  // --- REMOVE THIS LINE ---
+  // const { t } = useTranslation(); 
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // --- USE THE HOOK TO GET THE MODEL'S STATUS ---
   const isModelReady = useModelStatus();
 
+  // ... (the rest of your state and logic remains exactly the same)
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [predictionResults, setPredictionResults] = useState<Prediction[]>([]);
   const [scannedImage, setScannedImage] = useState<File | null>(null);
@@ -24,10 +32,9 @@ const HeroSection: React.FC = () => {
     const file = event.target.files?.[0];
     if (file) {
       setIsScanning(true);
-      const toastId = toast.loading(t('analyzing'));
+      const toastId = toast.loading(t('analyzing')); // This will now work
       setScannedImage(file);
       
-      // We no longer need to check if model is initialized here, the button being enabled is the check.
       const results = await performScan(file);
       
       toast.dismiss(toastId);
@@ -49,29 +56,35 @@ const HeroSection: React.FC = () => {
     setPredictionResults([]);
     setScannedImage(null);
   };
+  
 
   return (
     <>
-      <div className="text-center p-8 bg-gemini-surface-dark rounded-2xl">
-        <h2 className="text-3xl font-bold mb-4">{t('hero_title', 'AI-Powered Skin Analysis')}</h2>
-        <p className="text-lg text-gemini-text-secondary-dark mb-6">
-          {t('hero_subtitle', 'Get instant insights into your skin concerns. Just upload a photo.')}
+      <div className="text-center p-8 bg-surface rounded-2xl shadow-md border border-black/5 dark:border-white/5">
+        <h2 className="text-3xl font-extrabold text-text-primary mb-2">
+          {t('hero_title')} {/* This will now correctly translate */}
+        </h2>
+        <p className="text-lg text-text-secondary mb-8 max-w-xl mx-auto">
+          {t('hero_subtitle')} {/* This will now correctly translate */}
         </p>
 
         <button
           onClick={triggerFileSelect}
-          // --- UPDATE THE DISABLED LOGIC ---
-          disabled={isScanning || !isModelReady} 
-          className="inline-flex items-center justify-center gap-2 px-6 py-3 text-white bg-gemini-blue rounded-full font-semibold hover:bg-blue-600 disabled:bg-gray-500 disabled:cursor-wait transition-colors"
+          disabled={isScanning || !isModelReady}
+          className="inline-flex items-center justify-center gap-3 px-8 py-3 text-white bg-gradient-to-r from-primary to-blue-400 rounded-full font-semibold shadow-lg hover:shadow-primary/40 hover:scale-105 disabled:bg-gray-400 disabled:shadow-none disabled:scale-100 disabled:cursor-wait transition-all duration-300 ease-in-out"
         >
-          <FiCamera />
-          {/* --- UPDATE THE BUTTON TEXT --- */}
-          <span>
+          {isScanning || !isModelReady ? (
+            <FiLoader className="animate-spin" size={20} />
+          ) : (
+            <FiCamera size={20} />
+          )}
+
+          <span className="text-lg">
             {isScanning 
-              ? t('analyzing', 'Analyzing...') 
+              ? t('analyzing') 
               : !isModelReady 
-                ? 'Initializing AI...' 
-                : t('scan_now', 'Scan Now')}
+                ? t('initializing_ai', 'Initializing AI...') // Add key for this
+                : t('scan_now')} {/* This will now correctly translate */}
           </span>
         </button>
 

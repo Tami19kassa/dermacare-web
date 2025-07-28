@@ -22,7 +22,7 @@ import {
 } from 'react-icons/pi';
 
 
-// --- ICON MAP (Unchanged) ---
+// --- ICON MAP (This should ideally be moved to its own file, e.g., 'utils/iconMap.ts', but is fine here for now) ---
 const iconMap: { [key: string]: ReactElement } = {
   acne: <PiDotsThreeCircleVerticalBold />,
   eczema: <PiHandsClapping />,
@@ -42,7 +42,7 @@ const iconMap: { [key: string]: ReactElement } = {
 };
 
 
-// --- RE-STYLED DiseaseCard COMPONENT ---
+// --- DiseaseCard COMPONENT ---
 const DiseaseCard: React.FC<{
     disease: Disease;
     onClick: () => void;
@@ -65,13 +65,14 @@ const DiseaseCard: React.FC<{
     );
 };
 
-// --- RE-STYLED InitialView COMPONENT ---
+
+// --- InitialView COMPONENT ---
 const InitialView: React.FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(); // The 't' function is initialized here
   const { user } = useAuth();
   const [selectedDiseaseId, setSelectedDiseaseId] = useState<string | null>(null);
 
-  // Reusable section wrapper for consistent styling
+  // A reusable section wrapper for consistent styling
   const Section: React.FC<{ title: string; children: React.ReactNode; className?: string }> = ({ title, children, className }) => (
     <section className={`py-12 ${className || ''}`}>
       <h2 className="text-2xl sm:text-3xl font-bold mb-8 text-center text-text-primary">{title}</h2>
@@ -96,7 +97,11 @@ const InitialView: React.FC = () => {
 
         {/* All content is now within the main container */}
         <main className="space-y-16">
-          <HeroSection />
+          
+          {/* --- THIS IS THE FIX --- */}
+          {/* Pass the 't' function as a prop to the HeroSection */}
+          <HeroSection t={t} />
+          
           <Carousel />
           <InfoHub />
           
