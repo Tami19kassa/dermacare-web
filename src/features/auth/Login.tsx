@@ -1,88 +1,121 @@
 import React, { useState } from 'react';
-import { useAuth } from '../../hooks/useAuth';
-import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
+import { auth } from '../../firebase';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import toast from 'react-hot-toast';
-import { FiMail, FiLock } from 'react-icons/fi';
+import { FiEye, FiEyeOff } from 'react-icons/fi';
+import { Spinner } from '../../components/Spinner';
 
 const Login: React.FC = () => {
   const { t } = useTranslation();
+
+  // State variables for the form
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
-  const navigate = useNavigate();
+  const [obscurePassword, setObscurePassword] = useState(true);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Function to handle the form submission
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) {
-        toast.error("Please enter both email and password.");
-        return;
+    if (!email.trim() || !password.trim()) {
+      toast.error('Please enter both email and password.');
+      return;
     }
+
     setIsLoading(true);
     try {
-      await login(email, password);
-      toast.success('Logged in successfully!');
-      navigate('/');
+      // Use Firebase SDK to sign in the user
+      await signInWithEmailAndPassword(auth, email.trim(), password);
+      // On success, the AuthProvider's onAuthStateChanged listener will automatically
+      // update the user state, and the Auth/Guest routes will handle the redirect.
+      toast.success('Login successful!');
     } catch (error: any) {
-      toast.error(error.message || 'Failed to log in.');
+      // Provide a more user-friendly error message
+      const errorMessage = error.code === 'auth/invalid-credential'
+        ? 'Invalid email or password. Please try again.'
+        : 'Failed to log in. Please check your credentials.';
+      toast.error(errorMessage);
+      console.error("Login error:", error);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gemini-bg-light dark:bg-gemini-bg-dark p-4">
-      <div className="w-full max-w-md bg-gemini-surface-light dark:bg-gemini-surface-dark p-8 rounded-2xl shadow-lg">
+    // Main container that fills the screen and centers the form
+    <div className="relative min-h-screen flex items-center justify-center p-4 bg-background">
+      {/* Background Image and Gradient Overlay */}
+      <div className="absolute inset-0 z-0">
+        <img 
+          src="/assets/images/auth-bg.jpg" // Make sure you have an image at this path in your public folder
+          alt="" 
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent"/>
+      </div>
+
+      {/* Login Form Card */}
+      <div className="relative z-10 w-full max-w-md bg-surface/70 backdrop-blur-lg p-8 rounded-2xl border border-white/10 shadow-2xl">
         <div className="text-center mb-8">
-          <img src="/assets/images/logo.png" alt="Dermacare Logo" className="w-16 h-16 mx-auto mb-4" />
-          <h1 className="text-3xl font-medium text-gemini-text-light dark:text-gemini-text-dark">{t('welcome_back')}</h1>
-          <p className="text-gemini-text-secondary-light dark:text-gemini-text-secondary-dark">{t('sign_in_continue')}</p>
+          <h1 className="text-3xl font-bold text-text-primary">{t('log_in')}</h1>
+          <p className="text-text-secondary mt-2">{t('welcome_back')}</p>
         </div>
-        
-        <form onSubmit={handleSubmit} className="space-y-6">
+
+        <form onSubmit={handleLogin} className="space-y-6">
+          {/* Email Input */}
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder={t('email')}
+            className="w-full p-3 bg-background rounded-lg focus:outline-none focus:ring-2 focus:ring-primary transition-shadow"
+            required
+            autoComplete="email"
+          />
+          {/* Password Input */}
           <div className="relative">
-            <FiMail className="absolute left-4 top-1/2 -translate-y-1/2 text-gemini-text-secondary-light dark:text-gemini-text-secondary-dark" />
             <input
-              type="email"
-              placeholder={t('email')}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-3 pl-12 bg-gray-100 dark:bg-neutral-800 rounded-full focus:outline-none focus:ring-2 focus:ring-gemini-blue"
-              required
-            />
-          </div>
-          <div className="relative">
-            <FiLock className="absolute left-4 top-1/2 -translate-y-1/2 text-gemini-text-secondary-light dark:text-gemini-text-secondary-dark" />
-            <input
-              type="password"
-              placeholder={t('password')}
+              type={obscurePassword ? 'password' : 'text'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-3 pl-12 bg-gray-100 dark:bg-neutral-800 rounded-full focus:outline-none focus:ring-2 focus:ring-gemini-blue"
+              placeholder={t('password')}
+              className="w-full p-3 pr-10 bg-background rounded-lg focus:outline-none focus:ring-2 focus:ring-primary transition-shadow"
               required
+              autoComplete="current-password"
             />
-          </div>
-
-          <div className="text-right">
-            <Link to="/forgot-password" className="text-sm text-gemini-blue hover:underline">
-              {t('forgot_password')}
-            </Link>
+            <button
+              type="button"
+              onClick={() => setObscurePassword(!obscurePassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text-primary"
+              aria-label={obscurePassword ? 'Show password' : 'Hide password'}
+            >
+              {obscurePassword ? <FiEyeOff /> : <FiEye />}
+            </button>
           </div>
           
+          <div className="flex justify-end text-sm">
+            <Link to="/forgot-password" className="font-medium text-primary hover:underline">
+              {t('forgot_password')}?
+            </Link>
+          </div>
+
+          {/* Submit Button */}
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full p-3 bg-gemini-blue text-white font-semibold rounded-full hover:opacity-90 transition-opacity disabled:opacity-50"
+            className="w-full py-3 font-semibold bg-primary text-white rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center transition-opacity"
           >
-            {isLoading ? `${t('sign_in')}...` : t('sign_in')}
+            {isLoading ? <Spinner /> : t('log_in')}
           </button>
         </form>
-
-        <p className="text-center mt-8 text-sm text-gemini-text-secondary-light dark:text-gemini-text-secondary-dark">
-          {t('dont_have_account')}{' '}
-          <Link to="/register" className="font-medium text-gemini-blue hover:underline">
-            {t('sign_up')}
+        
+        {/* Link to Register Page */}
+        <p className="text-center text-sm text-text-secondary mt-8">
+          {t('dont_have_account')}?{' '}
+          <Link to="/register" className="font-semibold text-primary hover:underline">
+            {t('register')}
           </Link>
         </p>
       </div>

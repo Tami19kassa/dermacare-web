@@ -1,31 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import { subscribeToAllFeedback, updateFeedbackStatus, type FeedbackMessage } from '../../services/firestoreService';
-import { FiInbox } from 'react-icons/fi';
+import { FiInbox, FiMessageSquare } from 'react-icons/fi';
 import toast from 'react-hot-toast';
+import ConversationView from './ConversationView'; // <-- IMPORT
 
 const AdminInbox: React.FC = () => {
   const [messages, setMessages] = useState<FeedbackMessage[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedMessage, setSelectedMessage] = useState<FeedbackMessage | null>(null);
 
   useEffect(() => {
     setLoading(true);
-    // Subscribe to new messages and get the unsubscribe function
     const unsubscribe = subscribeToAllFeedback((newMessages) => {
       setMessages(newMessages);
       setLoading(false);
     });
-
-    // Return the unsubscribe function to be called when the component unmounts
     return () => unsubscribe();
   }, []);
 
   const handleMarkAsRead = async (id: string) => {
+    // If this message is currently open, close it first
+    if (selectedMessage?.id === id) {
+      setSelectedMessage(null);
+    }
     try {
       await updateFeedbackStatus(id, 'read');
       toast.success('Message marked as read.');
     } catch (error) {
       toast.error('Failed to update status.');
     }
+  };
+
+  const handleSelectMessage = (message: FeedbackMessage) => {
+    // Toggle conversation view
+    setSelectedMessage(prev => (prev?.id === message.id ? null : message));
   };
   
   return (
@@ -40,22 +48,29 @@ const AdminInbox: React.FC = () => {
           <p className="text-sm">There are no new messages from users.</p>
         </div>
       ) : (
-        <div className="overflow-y-auto flex-1 space-y-4">
+        <div className="overflow-y-auto flex-1 space-y-4 pr-2">
           {messages.map((msg) => (
             <div key={msg.id} className="bg-white/5 p-4 rounded-lg">
               <div className="flex justify-between items-start">
                 <div>
-                  <p className="font-semibold text-sm">{msg.userEmail}</p>
+                  <p className="font-semibold text-sm">{msg.userEmail}  </p>
                   <p className="text-xs text-gemini-text-secondary-dark">{msg.timestamp.toLocaleString()}</p>
                 </div>
-                <button 
-                  onClick={() => handleMarkAsRead(msg.id)} 
-                  className="text-xs px-2 py-1 bg-gemini-blue rounded-full hover:opacity-80"
-                >
-                  Mark as Read
-                </button>
+                <div className="flex items-center space-x-2">
+                  <button onClick={() => handleSelectMessage(msg)} className="text-xs px-3 py-1 bg-white/10 rounded-full hover:bg-white/20 flex items-center gap-2">
+                    <FiMessageSquare size={14}/> Reply
+                  </button>
+                  <button onClick={() => handleMarkAsRead(msg.id)} className="text-xs px-3 py-1 bg-gemini-blue rounded-full hover:opacity-80">
+                    Mark as Read
+                  </button>
+                </div>
               </div>
               <p className="mt-3 text-sm">{msg.message}</p>
+              
+              {/* Conditionally render the conversation view */}
+              {selectedMessage?.id === msg.id && (
+                <ConversationView originalMessage={selectedMessage} onClose={() => setSelectedMessage(null)} />
+              )}
             </div>
           ))}
         </div>

@@ -2,25 +2,32 @@
 export default {
   content: [
     "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}", // Ensure this path is correct
+    "./src/**/*.{js,ts,jsx,tsx}",
   ],
   darkMode: 'class',
   theme: {
     extend: {
+      // --- THE NEW SEMANTIC COLOR PALETTE ---
       colors: {
-        'gemini-blue': '#1a73e8',
-        'gemini-bg-light': '#f8f9fa',
-        'gemini-surface-light': '#ffffff',
-        'gemini-bg-dark': '#1f1f1f',
-        'gemini-surface-dark': '#2d2d2d',
-        'gemini-text-light': '#202124',
-        'gemini-text-secondary-light': '#5f6368',
-        'gemini-text-dark': '#e8eaed',
-        'gemini-text-secondary-dark': '#9aa0a6',
+        // We define semantic names and point them to the CSS variables from index.css
+        'background': 'rgb(var(--color-background) / <alpha-value>)',
+        'surface': 'rgb(var(--color-surface) / <alpha-value>)',
+        'primary': 'rgb(var(--color-primary) / <alpha-value>)',
+        'text-primary': 'rgb(var(--color-text-primary) / <alpha-value>)',
+        'text-secondary': 'rgb(var(--color-text-secondary) / <alpha-value>)',
       },
-      borderRadius: {
-        '4xl': '2rem',
+      animation: {
+        fadeIn: 'fadeIn 0.5s ease-in-out',
       },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+      },
+    },
+    fontFamily: {
+      sans: ['Inter', 'sans-serif'],
     },
   },
   plugins: [],

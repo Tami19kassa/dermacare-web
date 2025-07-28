@@ -22,3 +22,31 @@
 ::-webkit-scrollbar-thumb:hover {
   background-color: #9aa0a6;  
 }
+ 
+
+/* --- START: THE NEW "DERMABLUE GRADIENT" THEME --- */
+@layer base {
+  /* --- LIGHT THEME (DEFAULT) --- */
+  :root {
+    --color-background: 247 247 248; /* Clean, slightly cool off-white */
+    --color-surface: 255 255 255;    /* Crisp White for cards */
+    --color-primary: 37 99 235;      /* A strong, confident Blue (Blue-600) */
+    --color-text-primary: 27 30 36;   /* Rich, dark charcoal */
+    --color-text-secondary: 82 89 100; /* Professional medium gray */
+  }
+
+  /* --- DARK THEME OVERRIDES --- */
+  .dark {
+    --color-background: 18 20 25;      /* Deep, near-black charcoal */
+    --color-surface: 29 32 39;       /* Dark charcoal surface */
+    --color-primary: 59 130 246;     /* A brighter, more vibrant Blue for dark mode */
+    --color-text-primary: 240 242 245;   /* Light, clean off-white */
+    --color-text-secondary: 154 162 173;  /* Softer gray */
+  }
+}
+/* --- END: THE NEW "DERMABLUE GRADIENT" THEME --- */
+
+/* Apply the base styles to the body for a smooth transition */
+body {
+  @apply bg-background text-text-primary transition-colors duration-300;
+}
