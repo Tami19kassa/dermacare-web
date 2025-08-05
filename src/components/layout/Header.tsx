@@ -10,7 +10,7 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
   const { user } = useAuth();
-  const { theme } = useTheme(); // We only need the theme value here, not the toggle function
+  const { theme } = useTheme();  
 
   return (
     <header className="p-4 flex justify-between items-center">

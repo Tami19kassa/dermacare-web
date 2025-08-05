@@ -8,8 +8,7 @@ interface SkinDiseaseInfoModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
-
-// A reusable component for list items to keep the code clean
+ 
 const ListItem: React.FC<{ text: string }> = ({ text }) => (
     <li className="flex items-start">
         <div className="flex-shrink-0 bg-green-100 dark:bg-green-800/30 p-2 rounded-full mr-3 mt-1">
@@ -38,12 +37,10 @@ const SkinDiseaseInfoModal: React.FC<SkinDiseaseInfoModalProps> = ({ diseaseId, 
               <FiX className="h-6 w-6" />
             </button>
         </div>
-
-        {/* Scrollable Content */}
+ 
         <div className="p-6 overflow-y-auto flex-1">
           <div className="flex flex-col md:flex-row gap-6 mb-8">
-            {/* --- THIS IS THE FIX --- */}
-            {/* The image is now rendered here */}
+            
             <div className="w-full md:w-1/3 h-64 flex-shrink-0">
               <img 
                 src={disease.image} 
@@ -66,8 +63,7 @@ const SkinDiseaseInfoModal: React.FC<SkinDiseaseInfoModalProps> = ({ diseaseId, 
               </div>
             </div>
           </div>
-          
-          {/* Treatments and Habits sections remain the same */}
+        
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg">
               <h3 className="font-bold text-lg mb-2 text-gray-800 dark:text-white">{isAmharic ? "ቤተሰብ ሕክምና" : "Homemade Treatment"}</h3>
@@ -98,7 +94,7 @@ const SkinDiseaseInfoModal: React.FC<SkinDiseaseInfoModalProps> = ({ diseaseId, 
           </div>
         </div>
 
-        {/* --- No changes needed for the close button footer --- */}
+        
       </div>
     </div>
   );

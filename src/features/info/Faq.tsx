@@ -25,7 +25,7 @@ const Faq: React.FC = () => {
     ];
 
     return (
-        // The outer div and title have been removed
+       
         <div className="space-y-2">
             {faqData.map((item, index) => <FaqItem key={index} q={item.question} a={item.answer} />)}
         </div>

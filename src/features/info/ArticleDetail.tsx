@@ -51,7 +51,7 @@ const ArticleDetail: React.FC = () => {
     }
     return (
         <div className="bg-gemini-surface-light dark:bg-gemini-surface-dark rounded-2xl overflow-hidden shadow-lg">
-            {/* Display the image if a URL was provided */}
+            
             {imageUrl && (
                 <img 
                     src={imageUrl} 
@@ -59,7 +59,7 @@ const ArticleDetail: React.FC = () => {
                     className="w-full h-64 object-cover"
                 />
             )}
-            {/* Display the Markdown article content */}
+            
             <article className="prose dark:prose-invert max-w-none p-6 md:p-8">
                 <ReactMarkdown>{markdown}</ReactMarkdown>
             </article>

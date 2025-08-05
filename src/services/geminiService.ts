@@ -1,10 +1,8 @@
 import axios from 'axios';
-
-// Your Gemini API Key is loaded securely from the .env file
+ 
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
-
-// --- Type Definitions for clear, safe code ---
+ 
 type ChatHistory = { role: 'user' | 'model'; parts: { text: string }[] }[];
 
 export interface QuizQuestion {
@@ -18,9 +16,7 @@ export interface ArticleDetail {
     markdown: string;
     imageUrl: string;
 }
-
-// --- A curated map of keywords to reliable, high-quality image URLs ---
-// This ensures that article images are always relevant and look great.
+ 
 const curatedImageMap: { [key: string]: string } = {
   'default': 'https://images.pexels.com/photos/3985325/pexels-photo-3985325.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
   'sunscreen': 'https://images.pexels.com/photos/4041392/pexels-photo-4041392.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
@@ -31,13 +27,7 @@ const curatedImageMap: { [key: string]: string } = {
   'labels': 'https://images.pexels.com/photos/7262403/pexels-photo-7262403.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
 };
 
-
-/**
- * Sends a new message along with the conversation history to the Gemini API for a contextual response.
- * @param history The existing conversation history.
- * @param newMessage The new message from the user.
- * @returns The AI's text response as a string.
- */
+ 
 export const getGeminiChatResponse = async (
   history: ChatHistory,
   newMessage: string
@@ -62,13 +52,7 @@ export const getGeminiChatResponse = async (
     return "I'm having trouble connecting to my knowledge base right now. Please check your internet connection and try again.";
   }
 };
-
-/**
- * Generates a new set of unique skincare quiz questions from the Gemini API.
- * @param language The desired language for the questions ('English' or 'Amharic').
- * @param answeredQuestionIds An array of IDs for questions the user has already answered.
- * @returns A promise that resolves to an array of new QuizQuestion objects, or null if an error occurs.
- */
+ 
 export const getNewQuizQuestions = async (
   language: 'English' | 'Amharic',
   answeredQuestionIds: string[]
@@ -99,13 +83,7 @@ export const getNewQuizQuestions = async (
     return null;
   }
 };
-
-/**
- * Fetches a detailed article and a relevant image URL from our curated map.
- * @param topicId A unique identifier for the topic (e.g., 'sun-protection').
- * @param language The desired language for the article.
- * @returns A promise that resolves to an object with markdown content and an image URL.
- */
+ 
 export const getArticleDetail = async (
   topicId: string,
   language: 'English' | 'Amharic'

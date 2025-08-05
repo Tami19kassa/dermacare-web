@@ -1,5 +1,3 @@
- 
-
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { FiAlertTriangle } from 'react-icons/fi';
@@ -10,30 +8,58 @@ interface ConfirmModalProps {
   onConfirm: () => void;
   title: string;
   message: string;
+  confirmText?: string; // Optional prop for the confirm button text
 }
 
-export const ConfirmModal: React.FC<ConfirmModalProps> = ({ isOpen, onClose, onConfirm, title, message }) => {
+export const ConfirmModal: React.FC<ConfirmModalProps> = ({
+  isOpen,
+  onClose,
+  onConfirm,
+  title,
+  message,
+  confirmText,
+}) => {
   const { t } = useTranslation();
 
   if (!isOpen) return null;
 
+  const handleConfirm = () => {
+    onConfirm();
+    onClose(); // Often you want to close the modal after confirming
+  };
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4" onClick={onClose}>
-      <div 
-        className="bg-gemini-surface-dark rounded-2xl p-6 w-full max-w-sm flex flex-col items-center text-center animate-fadeIn" 
+    <div
+      className="fixed inset-0 bg-black/75 flex items-center justify-center z-50 p-4"
+      onClick={onClose}
+    >
+      <div
+        className="bg-surface rounded-2xl p-6 w-full max-w-sm flex flex-col space-y-4 animate-fadeIn shadow-2xl border border-black/10 dark:border-white/10"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="w-16 h-16 flex items-center justify-center rounded-full bg-red-500/20 text-red-500 mb-4">
-          <FiAlertTriangle size={32} />
+        <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-500/20">
+            <FiAlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400" aria-hidden="true" />
         </div>
-        <h3 className="text-xl font-bold mb-2">{title}</h3>
-        <p className="text-sm text-gemini-text-secondary-dark mb-6">{message}</p>
-        <div className="flex w-full space-x-4">
-          <button onClick={onClose} className="flex-1 py-2.5 rounded-lg bg-white/10 hover:bg-white/20">
+
+        <div className="text-center">
+            <h3 className="text-xl font-bold text-text-primary">{title}</h3>
+            <div className="mt-2">
+                <p className="text-sm text-text-secondary">{message}</p>
+            </div>
+        </div>
+
+        <div className="flex items-center space-x-4 pt-2">
+          <button
+            onClick={onClose}
+            className="flex-1 py-2.5 rounded-full bg-background hover:bg-black/5 dark:hover:bg-white/10 font-semibold text-text-secondary transition-colors"
+          >
             {t('cancel', 'Cancel')}
           </button>
-          <button onClick={onConfirm} className="flex-1 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 font-semibold">
-            {t('delete', 'Delete')}
+          <button
+            onClick={handleConfirm}
+            className="flex-1 py-2.5 rounded-full bg-red-600 hover:bg-red-700/90 text-white font-semibold flex items-center justify-center gap-2 transition-opacity"
+          >
+            {confirmText || t('delete', 'Delete')}
           </button>
         </div>
       </div>

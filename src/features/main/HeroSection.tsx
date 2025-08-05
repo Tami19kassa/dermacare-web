@@ -1,28 +1,21 @@
 import React, { useState, useRef } from 'react';
-// --- REMOVE THIS IMPORT --- It's no longer needed here
-// import { useTranslation } from 'react-i18next';
+ 
 import toast from 'react-hot-toast';
 import { FiCamera, FiLoader } from 'react-icons/fi';
 import { performScan, type Prediction } from '../../services/predictionService';
 import { PredictionModal } from '../scanner/PredictionModal';
 import { useModelStatus } from '../../hooks/useModelStatus';
-import { type TFunction } from 'i18next'; // <-- IMPORT THE TYPE FOR 't'
-
-// --- START: MODIFIED PROPS ---
+import { type TFunction } from 'i18next';  
+ 
 interface HeroSectionProps {
-  t: TFunction; // Add 't' function as a required prop
+  t: TFunction;  
 }
 
-const HeroSection: React.FC<HeroSectionProps> = ({ t }) => { // <-- ACCEPT THE PROP
-  // --- END: MODIFIED PROPS ---
-  
-  // --- REMOVE THIS LINE ---
-  // const { t } = useTranslation(); 
+const HeroSection: React.FC<HeroSectionProps> = ({ t }) => {  
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isModelReady = useModelStatus();
-
-  // ... (the rest of your state and logic remains exactly the same)
+  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [predictionResults, setPredictionResults] = useState<Prediction[]>([]);
   const [scannedImage, setScannedImage] = useState<File | null>(null);
@@ -32,7 +25,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ t }) => { // <-- ACCEPT THE P
     const file = event.target.files?.[0];
     if (file) {
       setIsScanning(true);
-      const toastId = toast.loading(t('analyzing')); // This will now work
+      const toastId = toast.loading(t('analyzing'));  
       setScannedImage(file);
       
       const results = await performScan(file);
@@ -62,10 +55,10 @@ const HeroSection: React.FC<HeroSectionProps> = ({ t }) => { // <-- ACCEPT THE P
     <>
       <div className="text-center p-8 bg-surface rounded-2xl shadow-md border border-black/5 dark:border-white/5">
         <h2 className="text-3xl font-extrabold text-text-primary mb-2">
-          {t('hero_title')} {/* This will now correctly translate */}
+          {t('hero_title')}  
         </h2>
         <p className="text-lg text-text-secondary mb-8 max-w-xl mx-auto">
-          {t('hero_subtitle')} {/* This will now correctly translate */}
+          {t('hero_subtitle')}  
         </p>
 
         <button
@@ -83,8 +76,8 @@ const HeroSection: React.FC<HeroSectionProps> = ({ t }) => { // <-- ACCEPT THE P
             {isScanning 
               ? t('analyzing') 
               : !isModelReady 
-                ? t('initializing_ai', 'Initializing AI...') // Add key for this
-                : t('scan_now')} {/* This will now correctly translate */}
+                ? t('initializing_ai', 'Initializing AI...')  
+                : t('scan_now')}  
           </span>
         </button>
 

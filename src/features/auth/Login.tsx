@@ -26,13 +26,12 @@ const Login: React.FC = () => {
 
     setIsLoading(true);
     try {
-      // Use Firebase SDK to sign in the user
+     
       await signInWithEmailAndPassword(auth, email.trim(), password);
-      // On success, the AuthProvider's onAuthStateChanged listener will automatically
-      // update the user state, and the Auth/Guest routes will handle the redirect.
+     
       toast.success('Login successful!');
     } catch (error: any) {
-      // Provide a more user-friendly error message
+      
       const errorMessage = error.code === 'auth/invalid-credential'
         ? 'Invalid email or password. Please try again.'
         : 'Failed to log in. Please check your credentials.';
@@ -44,12 +43,12 @@ const Login: React.FC = () => {
   };
 
   return (
-    // Main container that fills the screen and centers the form
+   
     <div className="relative min-h-screen flex items-center justify-center p-4 bg-background">
-      {/* Background Image and Gradient Overlay */}
+       
       <div className="absolute inset-0 z-0">
         <img 
-          src="/assets/images/auth-bg.jpg" // Make sure you have an image at this path in your public folder
+          src="/assets/images/auth-bg.jpg"  
           alt="" 
           className="w-full h-full object-cover"
         />

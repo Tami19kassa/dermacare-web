@@ -5,14 +5,12 @@ import ScanHistory from '../../features/scanner/ScanHistory';
 import Faq from '../../features/info/Faq';
 import About from '../../features/info/About';
 import Accordion from '../Accordion';
-
-// ... (imports)
-
+ 
 const LeftSidebar: React.FC = () => {
   const { t } = useTranslation();
   return (
     <div className="flex flex-col space-y-6 p-1">
-      {/* FIX: Use the new theme-aware surface and text colors */}
+     
       <div className="bg-surface rounded-2xl p-4">
         <h2 className="text-lg font-medium text-text-secondary mb-3 px-2">
           {t('scan_history')}

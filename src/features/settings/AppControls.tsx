@@ -12,9 +12,9 @@ const AppControls: React.FC = () => {
     };
 
     return (
-        // Changed to a horizontal layout
+        
         <div className="w-full flex items-center space-x-4">
-            {/* Theme Toggle */}
+           
             <div className="flex items-center space-x-2 p-1 bg-gray-200 dark:bg-neutral-700 rounded-full">
                 <button title={t('light')} onClick={() => theme !== 'light' && toggleTheme()} className={`p-1.5 rounded-full ${theme === 'light' ? 'bg-white dark:bg-neutral-800 shadow' : ''}`}>
                     <FiSun size={16}/>

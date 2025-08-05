@@ -15,8 +15,7 @@ let model: tf.LayersModel | null = null;
 let metadata: { labels: string[] } | null = null;
  
 let modelPromise: Promise<{ model: tf.LayersModel; metadata: any }> | null = null;
-
-// --- Initialize the model and load metadata ---
+ 
 export const initializeModel = (): Promise<{ model: tf.LayersModel; metadata: any }> => {
   if (modelPromise) {
     return modelPromise;
@@ -26,11 +25,10 @@ export const initializeModel = (): Promise<{ model: tf.LayersModel; metadata: an
 
   modelPromise = new Promise(async (resolve, reject) => {
     try {
-      // 1. Load the model topology and weights
+      
       const loadedModel = await tf.loadLayersModel(MODEL_URL);
       model = loadedModel;
-
-      // 2. Fetch and parse the metadata
+ 
       const metadataResponse = await fetch(METADATA_URL);
       const loadedMetadata = await metadataResponse.json();
       metadata = loadedMetadata;
@@ -39,32 +37,27 @@ export const initializeModel = (): Promise<{ model: tf.LayersModel; metadata: an
       resolve({ model, metadata });
     } catch (err) {
       console.error('🔥 Failed to load TensorFlow.js model or metadata:', err);
-      modelPromise = null; // Reset on failure
+      modelPromise = null;  
       reject(err);
     }
   });
 
   return modelPromise;
 };
-
-// --- Run prediction on an image file ---
+ 
 export const runPrediction = async (imageFile: File): Promise<Prediction[]> => {
-  // 1. Ensure the model is loaded before proceeding
+   
   if (!model || !metadata) {
     throw new Error('Model not initialized. Call initializeModel() first.');
   }
-
-  // 2. Create an HTMLImageElement from the file
+ 
   const imageElement = document.createElement('img');
   imageElement.src = URL.createObjectURL(imageFile);
   await new Promise((resolve, reject) => {
     imageElement.onload = resolve;
     imageElement.onerror = reject;
   });
-
-  // 3. Pre-process the image into a tensor
-  //    - Teachable Machine models are typically trained on 224x224 images.
-  //    - Normalization scales pixel values from [0, 255] to [-1, 1].
+ 
   const imageTensor = tf.browser.fromPixels(imageElement)
     .resizeNearestNeighbor([224, 224]) // Resize the image
     .toFloat()

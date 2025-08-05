@@ -1,8 +1,7 @@
 import React, { useState, type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../hooks/useAuth';
-
-// Import all the building block components
+ 
 import HeroSection from './HeroSection';
 import Carousel from './Carousel';
 import InfoHub from '../info/InfoHub';
@@ -10,19 +9,16 @@ import Contact from '../info/Contact';
 import Footer from '../info/Footer';
 import SkinDiseaseInfoModal from '../info/SkinDiseaseInfoModal';
 import About from '../info/About';
-
-// Import the data and the type definition
+ 
 import { diseaseDatabase, type Disease } from '../../data/diseaseDatabase';
-
-// Import the icons that will be used
+ 
 import {
   PiDotsThreeCircleVerticalBold, PiHandsClapping, PiShieldCheckeredBold, PiFireSimpleBold, PiVirusBold,
   PiCircleDashedBold, PiCouchBold, PiPersonSimpleRunBold, PiPlantBold, PiLightningBold, PiStickerBold,
   PiCirclesFourBold, PiPaintBrushHouseholdBold, PiMosqueBold, PiCircle
 } from 'react-icons/pi';
 
-
-// --- ICON MAP (This should ideally be moved to its own file, e.g., 'utils/iconMap.ts', but is fine here for now) ---
+ 
 const iconMap: { [key: string]: ReactElement } = {
   acne: <PiDotsThreeCircleVerticalBold />,
   eczema: <PiHandsClapping />,
@@ -40,9 +36,7 @@ const iconMap: { [key: string]: ReactElement } = {
   hives: <PiMosqueBold />,
   boils: <PiCircle />,
 };
-
-
-// --- DiseaseCard COMPONENT ---
+ 
 const DiseaseCard: React.FC<{
     disease: Disease;
     onClick: () => void;
@@ -64,15 +58,12 @@ const DiseaseCard: React.FC<{
         </button>
     );
 };
-
-
-// --- InitialView COMPONENT ---
+ 
 const InitialView: React.FC = () => {
-  const { t } = useTranslation(); // The 't' function is initialized here
+  const { t } = useTranslation();  
   const { user } = useAuth();
   const [selectedDiseaseId, setSelectedDiseaseId] = useState<string | null>(null);
-
-  // A reusable section wrapper for consistent styling
+ 
   const Section: React.FC<{ title: string; children: React.ReactNode; className?: string }> = ({ title, children, className }) => (
     <section className={`py-12 ${className || ''}`}>
       <h2 className="text-2xl sm:text-3xl font-bold mb-8 text-center text-text-primary">{title}</h2>
@@ -81,11 +72,9 @@ const InitialView: React.FC = () => {
   );
 
   return (
-    <>
-      {/* Main container to center content and provide padding */}
+    <> 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Main Header */}
         <header className="py-16 text-center">
           <h1 className="text-4xl md:text-5xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-primary via-blue-400 to-cyan-400 mb-3">
             {t('hello_user', { name: user?.displayName?.split(' ')[0] || t('guest') })}
@@ -94,12 +83,9 @@ const InitialView: React.FC = () => {
             {t('main_greeting')}
           </p>
         </header>
-
-        {/* All content is now within the main container */}
+ 
         <main className="space-y-16">
           
-          {/* --- THIS IS THE FIX --- */}
-          {/* Pass the 't' function as a prop to the HeroSection */}
           <HeroSection t={t} />
           
           <Carousel />

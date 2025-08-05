@@ -1,4 +1,4 @@
-// src/components/MainContent/ChatInput.tsx
+ 
 import React from 'react';
 import { FiCamera, FiSend } from 'react-icons/fi';
 import { useTranslation } from 'react-i18next';

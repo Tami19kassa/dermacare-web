@@ -9,8 +9,7 @@ const Feedback: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-
-    // Simulate sending feedback
+ 
     setTimeout(() => {
       toast.success("Thank you for your feedback!");
       setIsLoading(false);

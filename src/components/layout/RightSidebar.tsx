@@ -4,7 +4,7 @@ import Quiz from "../../features/profile/Quiz";
 const RightSidebar: React.FC = () => {
   return (
     <div className="flex flex-col space-y-6 p-1">
-        {/* FIX: Use the new theme-aware surface color */}
+        
         <div className="bg-surface rounded-2xl p-4">
             <Profile />
         </div>

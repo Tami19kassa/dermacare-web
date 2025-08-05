@@ -14,21 +14,19 @@ import vitiligoImage from '../assets/images/diseases/vitiligo.jpg';
 import hivesImage from '../assets/images/diseases/hives.jpg';
 import boilsImage from '../assets/images/diseases/boils.jpg';
 
-// Define the shape of a single disease object for type safety
 export interface Disease {
   id: string;
   name: { en: string; am: string };
-  image: string; // Path to image in the /public folder
+  image: string;  
   description: { en: string; am: string };
   symptoms: { en: string[]; am: string[] };
   homeTreatments: { en: string[]; am: string[] };
   doctorTreatments: { en: string[]; am: string[] };
   bestHabits: { en: string[]; am: string[] };
 }
-
-// This is our central database for all 15 skin conditions
+ 
 export const diseaseDatabase: Disease[] = [
-  // 1. Acne
+  
   {
     id: "acne",
     name: { en: "Acne", am: "አክኔ" },

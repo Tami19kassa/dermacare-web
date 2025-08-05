@@ -48,7 +48,7 @@ const Contact: React.FC = () => {
   };
 
   return (
-    // The section and form structure are correct. We only need to change the button.
+    
     <section>
       <h2 className="text-2xl font-medium mb-6 px-2 text-text-primary">{t('contact_us_title')}</h2>
       <div className="bg-surface p-6 rounded-2xl shadow-md border border-black/5 dark:border-white/5">
@@ -56,7 +56,7 @@ const Contact: React.FC = () => {
           {t('contact_us_desc')}
         </p>
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Input fields are fine */}
+          
           <input 
             type="text" name="fullName" placeholder={t('full_name')} 
             value={formData.fullName} onChange={handleChange}
@@ -77,16 +77,15 @@ const Contact: React.FC = () => {
             required
           ></textarea>
           
-          {/* --- START: THIS IS THE FIX --- */}
           <button 
             type="submit" 
             disabled={isLoading || !user}
-            // Use the primary color for high contrast and a consistent brand feel.
+            
             className="w-full px-5 py-2.5 font-semibold bg-primary text-white rounded-full hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
           >
             {isLoading ? t('sending') : t('send_message')}
           </button>
-          {/* --- END: THIS IS THE FIX --- */}
+          
           
           {!user && (
               <p className="text-xs text-center text-amber-500 dark:text-amber-400">

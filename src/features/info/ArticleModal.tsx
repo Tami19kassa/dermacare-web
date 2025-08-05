@@ -15,8 +15,7 @@ const ArticleModal: React.FC = () => {
   const [imageUrl, setImageUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
-  // Get the display title for the article
+   
   const articleTitle = topicId ? getTopicTitle(topicId, t) : '';
 
   useEffect(() => {
@@ -59,13 +58,13 @@ const ArticleModal: React.FC = () => {
                   className="w-full h-56 object-cover flex-shrink-0"
               />
           )}
-          {/* --- THIS IS THE CORRECTED STRUCTURE --- */}
+         
           <div className="flex-grow overflow-y-auto min-h-0 p-6 md:p-8">
-                {/* 1. The Title is now OUTSIDE the prose container */}
+                
                 <h1 className="text-3xl font-bold mb-4 text-gemini-text-light dark:text-gemini-text-dark">
                     {articleTitle}
                 </h1>
-                {/* 2. The article content is INSIDE the prose container for readability */}
+                
                 <article className="prose dark:prose-invert max-w-none">
                     <ReactMarkdown>{markdown}</ReactMarkdown>
                 </article>

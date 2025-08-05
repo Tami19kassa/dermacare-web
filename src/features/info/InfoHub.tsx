@@ -2,14 +2,13 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { FiSun, FiDroplet, FiZap, FiBookOpen } from 'react-icons/fi';
 import { useArticleModal } from '../../context/ArticleModalContext';
-
-// This is a reusable component for each card in the hub.
+ 
 const InfoHubCard: React.FC<{ topic: { id: string; title: string; icon: React.ReactNode; description: string; } }> = ({ topic }) => {
-    // We get the function to open the modal from our global context.
+     
     const { openArticleModal } = useArticleModal();
 
     return (
-        // This is now a button that, when clicked, opens the article modal with the correct topic ID.
+         
         <button 
             onClick={() => openArticleModal(topic.id)}
             className="text-left block w-full bg-gemini-surface-light dark:bg-gemini-surface-dark p-6 rounded-2xl hover:bg-gray-100 dark:hover:bg-neutral-700 transition-colors"
@@ -24,14 +23,11 @@ const InfoHubCard: React.FC<{ topic: { id: string; title: string; icon: React.Re
         </button>
     );
 };
-
-
-// This is the main InfoHub component that renders the list of cards.
+ 
 const InfoHub: React.FC = () => {
     const { t } = useTranslation();
 
-    // This array is the single source of truth for the topics displayed in the Info Hub.
-    // The `id` here is crucial as it's passed to the Gemini API.
+ 
     const topics = [
         { id: 'sun-protection', title: t('sun_protection_title'), icon: <FiSun />, description: t('sun_protection_desc') },
         { id: 'hydration-hacks', title: t('hydration_hacks_title'), icon: <FiDroplet />, description: t('hydration_hacks_desc') },

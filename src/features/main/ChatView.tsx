@@ -2,7 +2,7 @@ import React from 'react';
 import { FiArrowLeft } from 'react-icons/fi';
 import { useTranslation } from 'react-i18next';
 import ChatBubble from './ChatBubble';
-import type { Message } from './MainContent'; // Add type-only import
+import type { Message } from './MainContent';  
 
 interface ChatViewProps {
   messages: Message[];

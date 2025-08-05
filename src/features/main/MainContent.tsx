@@ -1,12 +1,10 @@
-// src/features/main/MainContent.tsx
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../hooks/useAuth';
 import { getGeminiChatResponse } from '../../services/geminiService';
 import toast from 'react-hot-toast';
-
-// Import services and components
+ 
 import { performScan, type Prediction } from '../../services/predictionService';
 import { PredictionModal } from '../scanner/PredictionModal';
 import InitialView from './InitialView';
@@ -48,7 +46,7 @@ const MainContent: React.FC = () => {
             }, 50); // Adjust speed as needed
             return () => clearTimeout(timer);
         } else if (isTyping) {
-            // Typing finished, add the final message
+            
             const finalMessage = typingChunks.join(' ');
             setMessages(prev => {
                 const newMessages = [...prev];
@@ -131,11 +129,9 @@ const MainContent: React.FC = () => {
     return (
         <>
             <div className="flex flex-col h-full min-h-0 w-full">
-                {/* --- CHANGE #1: ADD 'flex flex-col-reverse' TO THE SCROLLING CONTAINER --- */}
-                {/* This makes the content start from the bottom and grow upwards. */}
+                
                 <div className={`flex-1 overflow-y-auto min-h-0 ${messages.length > 0 ? 'flex flex-col-reverse' : 'flex flex-col'}`}>
-                    {/* --- CHANGE #2: ADD PADDING TO THE TOP (pt-4) --- */}
-                    {/* Because of flex-col-reverse, top padding now acts like bottom padding for the list. */}
+                    
                     <div className="max-w-4xl mx-auto p-4 pt-4 w-full">
                         {messages.length === 0 ? (
                             <InitialView />
@@ -162,8 +158,6 @@ const MainContent: React.FC = () => {
                     handleImageChange={handleImageChange}
                 />
                 
-                {/* --- CHANGE #3: REMOVE THE SPACER DIV --- */}
-                {/* This was the root cause of the layout breaking. It MUST be removed. */}
             </div>
 
             {isModalOpen && (
