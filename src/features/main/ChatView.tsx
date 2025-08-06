@@ -2,15 +2,16 @@ import React from 'react';
 import { FiArrowLeft } from 'react-icons/fi';
 import { useTranslation } from 'react-i18next';
 import ChatBubble from './ChatBubble';
-import type { Message } from './MainContent';  
+import type { Message } from './MainContent';
 
 interface ChatViewProps {
   messages: Message[];
   resetChat: () => void;
   isTyping: boolean;
   typingText: string;
-  typingIndex: number;
   isLoading: boolean;
+  // MODIFICATION: Accept the ref for the scroll target
+  messagesEndRef: React.RefObject<HTMLDivElement>;
 }
 
 const ChatView: React.FC<ChatViewProps> = ({
@@ -18,16 +19,15 @@ const ChatView: React.FC<ChatViewProps> = ({
   resetChat,
   isTyping,
   typingText,
-  typingIndex,
-  isLoading
+  isLoading,
+  messagesEndRef // Destructure the ref
 }) => {
   const { t } = useTranslation();
 
   return (
     <div className="space-y-6">
-      {/* Back button at the top */}
       <div className="flex items-center mb-4">
-        <button 
+        <button
           onClick={resetChat}
           className="flex items-center text-gemini-blue hover:text-gemini-blue-dark transition-colors"
         >
@@ -35,20 +35,17 @@ const ChatView: React.FC<ChatViewProps> = ({
           {t('back_to_home')}
         </button>
       </div>
-      
-      {/* Chat messages */}
+
       {messages.map((msg, index) => (
-        <ChatBubble 
+        <ChatBubble
           key={index}
           msg={msg}
           isTyping={isTyping}
           typingText={typingText}
           isLastMessage={index === messages.length - 1}
-          typingIndex={typingIndex}
-          index={index}
         />
       ))}
-      
+
       {isLoading && (
         <div className="flex items-start gap-3.5">
           <img className="w-8 h-8 rounded-full" src="/assets/images/logo.png" alt="Bot Avatar" />
@@ -59,6 +56,9 @@ const ChatView: React.FC<ChatViewProps> = ({
           </div>
         </div>
       )}
+
+      {/* MODIFICATION: This empty div is the target for auto-scrolling */}
+      <div ref={messagesEndRef} />
     </div>
   );
 };
